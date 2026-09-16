@@ -21,6 +21,7 @@ W zakresie:
 4. Okładka z MediaRemote serwowana stronie przez własny schemat adresu.
 5. Przyciski poprzedni / play-pauza / następny kierowane do wybranego odtwarzacza.
 6. Zapas: obecny odczyt i sterowanie przez AppleScript dla Spotify i Music.
+7. 1-bitowa grafika przycisku play dla przeglądarek bez okładki (decyzja Pawła po spike'u).
 
 Poza zakresem: przewijanie paska kliknięciem, pokazywanie kilku odtwarzaczy naraz,
 wybór źródła ręcznie, powiadomienia MediaRemote zamiast odpytywania, rozpoznawanie
@@ -152,7 +153,10 @@ Adres okładki:
    `wokyintosh-art://artwork/<artworkId>`.
 2. Jeśli `bundle == com.apple.Music` → obecne wyszukiwanie w iTunes Search API
    (z pamięcią podręczną jak dziś).
-3. Inaczej `""` (strona pokazuje grafikę zastępczą).
+3. Jeśli `bundle` to przeglądarka (`company.thebrowser.dia`, `company.thebrowser.Browser`,
+   `com.google.Chrome`, `com.apple.Safari`) → `video-art.svg`, 1-bitowy przycisk play z zasobów
+   strony. Kafelek nie wie, czy w przeglądarce gra YouTube, więc grafika jest ogólna, bez logo.
+4. Inaczej `""` (strona pokazuje grafikę zastępczą).
 
 Magazyn okładek trzyma po jednej okładce na `bundle` i tylko dla odtwarzaczy obecnych
 w ostatnim stanie. Schemat `wokyintosh-art` odpowiada bajtami i `mime` z magazynu,
@@ -204,6 +208,7 @@ Nowe:
 - `Wokyintosh/NowPlayingSelection.swift`
 - `Wokyintosh/MediaRemoteHelper.swift`
 - `Wokyintosh/ArtworkSchemeHandler.swift`
+- `Wokyintosh/Resources/video-art.svg`
 - `Tests/helper-smoke.command`
 
 Zmieniane:
@@ -214,6 +219,7 @@ Zmieniane:
   `bridge.performMedia(_:)`.
 - `Build Wokyintosh.command` — kompilacja dyliba (`clang -dynamiclib -fblocks -O2`,
   ta sama architektura), kopiowanie `Helper/` do `Contents/Resources/Helper/` przed podpisem,
+  kopiowanie `video-art.svg` do zasobów strony,
   nowe pliki Swift w kompilacji.
 - `Run Tests.command`, `Tests/main.swift` — nowe testy.
 - `README.md` — punkt o systemowym Now Playing w notce forka.
@@ -232,7 +238,7 @@ Zmieniane:
    - wybór odtwarzacza: gra kontra pauza, dwa grające, sama pauza, remis z poprzednim
      wyborem, brak tytułu, pusta lista,
    - pozycja: gra, pauza, obcięcie do długości, `teraz < timestamp`, `duration == 0`,
-   - mapowanie na `NowPlayingData` i trzy reguły adresu okładki,
+   - mapowanie na `NowPlayingData` i cztery reguły adresu okładki,
    - decyzja o zapasie AppleScript po `ack` (Spotify/Music tak, inne nie),
    - polityka restartów: kolejne przerwy, próg 3 porażek, kod 3, zerowanie po `state`.
 3. `Tests/helper-smoke.command` na zbudowanym dylibie:
@@ -246,7 +252,7 @@ Zmieniane:
 
 - Czy Dia/YouTube reaguje na komendy wysłane z odczytaną sygnaturą. Jeśli nie: przyciski
   dla źródeł spoza Spotify/Music nic nie robią (tylko wpis w logu).
-- Czy flaga `includeArtwork` daje bajty okładki. Jeśli nie: reguły 2 i 3 z sekcji 7.
+- Czy flaga `includeArtwork` daje bajty okładki. Jeśli nie: reguły 2–4 z sekcji 7.
 - Czy YouTube obsługuje `nextTrack`/`previousTrack` poza playlistą.
 - Czy strona ładowana z `file://` wyświetla obrazki ze schematu `wokyintosh-art`.
 - Apple może zamknąć furtkę z `/usr/bin/perl` albo usunąć perla z systemu; wtedy działa
@@ -272,7 +278,7 @@ Na ekranie Wokyis, po instalacji przez `Build Wokyintosh.command`:
 2. Pauza w Dii: kafelek pokazuje pauzę, pasek stoi.
 3. Start Music przy spauzowanym YouTube: kafelek przechodzi na Music.
 4. Przyciski działają dla Music (wszystkie trzy) i dla YouTube (zgodnie z wynikiem spike'a).
-5. Okładka filmu widoczna (zgodnie z wynikiem spike'a).
+5. Przy YouTube w Dii w ramce okładki widać 1-bitowy przycisk play.
 6. `pkill -f nowplaying-helper` w trakcie odtwarzania: kafelek dalej pokazuje Music przez
    AppleScript, pomocnik wraca sam, a kafelek wraca do danych z MediaRemote.
 7. Po zamknięciu Wokyintosha nie zostaje żaden proces `perl` z pomocnikiem.

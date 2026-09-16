@@ -23,7 +23,7 @@
 - `MediaControl.swift` zostaje czystą ścieżką AppleScript.
 
 **Doprecyzowania względem specu (wpisane do specu przed tym planem):**
-- Pomocnik jest w Objective-C (`Helper/NowPlayingHelper.m`), nie w czystym C, żeby JSON w obie strony robił `NSJSONSerialization` zamiast ręcznego parsera. Ładuje się tak samo przez DynaLoader. Foundation może dołożyć 1–2 MB; test wycieku w zadaniu 9 sprawdza próg 15 MB.
+- Pomocnik jest w Objective-C (`Helper/NowPlayingHelper.m`), nie w czystym C, żeby JSON w obie strony robił `NSJSONSerialization` zamiast ręcznego parsera. Ładuje się tak samo przez DynaLoader. Foundation może dołożyć 1–2 MB; test wycieku w zadaniu 10 sprawdza próg 15 MB.
 - Sygnatury z deasemblacji (sekcja 3 specu): `ForClient(client, origin, Boolean includeArtwork, queue, block(CFDictionaryRef, void *))`, `SendCommandToClient(uint32_t command, CFDictionaryRef options, origin, client, uint32_t appOptions, queue, block(uint32_t error, CFArrayRef statuses)) -> Boolean`.
 - Okładka: pomocnik odpytuje co sekundę bez flagi okładki, a z flagą tylko raz, gdy zmieni się `artworkId`; linia `artwork` wychodzi przed linią `state`.
 - Po zakończeniu procesu pomocnika aplikacja od razu czyści stan (zamiast czekać 5 s na nieświeżość), więc kafelek przechodzi na AppleScript natychmiast.
@@ -2085,19 +2085,145 @@ git add Wokyintosh/ArtworkSchemeHandler.swift Wokyintosh/AppDelegate.swift Wokyi
 git commit -m "feat: okładki z MediaRemote podawane stronie przez schemat wokyintosh-art"
 ```
 
-### Task 9: Test wycieku i weryfikacja na ekranie doku
+### Task 9: Przycisk play dla przeglądarek bez okładki
+
+Dodane po spike'u (zadanie 1): MediaRemote nie podaje bajtów okładek z Dii ani Music, więc dla przeglądarek kafelek pokazuje 1-bitowy przycisk play zamiast nocnego miasta. Decyzja Pawła: przycisk play (bez logo YouTube), przeglądarki Dia, Arc, Chrome, Safari.
+
+**Files:**
+- Create: `Wokyintosh/Resources/video-art.svg`
+- Modify: `Wokyintosh/NowPlayingSelection.swift` (stałe i `artworkURL`)
+- Modify: `Build Wokyintosh.command` (kopiowanie grafiki)
+- Test: `Tests/main.swift` (jedna asercja z zadania 3 zmieniona, dwie nowe)
+
+**Interfaces:**
+- Consumes: `NowPlayingSelection.artworkURL(for:hasArtwork:musicLookup:)` i `musicBundle` (zadanie 3), `mrPlayer(...)`, `diaBundle` w `Tests/main.swift` (zadanie 3).
+- Produces: `NowPlayingSelection.browserBundles: Set<String>`, `NowPlayingSelection.videoArtURL = "video-art.svg"`; strona dostaje `artwork_url: "video-art.svg"`, który `setArtwork` w `app.js` ładuje względem `index.html`.
+
+- [ ] **Step 1: Zmień testy**
+
+W `Tests/main.swift` zamień linię:
+
+```swift
+assertEqual(NowPlayingSelection.artworkURL(for: mrPlayer(diaBundle, artworkId: "7ec2"), hasArtwork: false, musicLookup: { "https://itunes" }), "", "okładka: inne źródło bez bajtów")
+```
+
+na:
+
+```swift
+assertEqual(NowPlayingSelection.artworkURL(for: mrPlayer("com.example.player", artworkId: "7ec2"), hasArtwork: false, musicLookup: { "https://itunes" }), "", "okładka: inne źródło bez bajtów")
+assertEqual(NowPlayingSelection.artworkURL(for: mrPlayer(diaBundle, artworkId: "7ec2"), hasArtwork: false, musicLookup: { "https://itunes" }), "video-art.svg", "okładka: Dia bez bajtów pokazuje przycisk play")
+assertEqual(NowPlayingSelection.artworkURL(for: mrPlayer("com.apple.Safari"), hasArtwork: false, musicLookup: { "https://itunes" }), "video-art.svg", "okładka: Safari bez bajtów pokazuje przycisk play")
+```
+
+Asercja „okładka: z magazynu" (Dia z bajtami → `wokyintosh-art://…`) zostaje bez zmian i pilnuje, że bajty wygrywają także dla przeglądarek.
+
+- [ ] **Step 2: Uruchom testy i sprawdź, że nie przechodzą**
+
+Run: `./"Run Tests.command"`
+Expected: linie `FAIL okładka: Dia bez bajtów pokazuje przycisk play` i `FAIL okładka: Safari bez bajtów pokazuje przycisk play` (otrzymano pusty tekst, oczekiwano `video-art.svg`), na końcu `2 z 106 sprawdzeń nie przeszło`.
+
+- [ ] **Step 3: Napisz implementację**
+
+W `Wokyintosh/NowPlayingSelection.swift` zamień:
+
+```swift
+    static let musicBundle = "com.apple.Music"
+    private static let appleScriptBundles: Set<String> = ["com.spotify.client", musicBundle]
+```
+
+na:
+
+```swift
+    static let musicBundle = "com.apple.Music"
+    private static let appleScriptBundles: Set<String> = ["com.spotify.client", musicBundle]
+    /// Przeglądarki: MediaRemote nie podaje z nich okładek (spike, sekcja 12 specu), a kafelek
+    /// nie wie, czy gra YouTube, więc pokazuje ogólny przycisk play zamiast logo.
+    static let browserBundles: Set<String> = [
+        "company.thebrowser.dia",
+        "company.thebrowser.Browser",
+        "com.google.Chrome",
+        "com.apple.Safari",
+    ]
+    static let videoArtURL = "video-art.svg"
+```
+
+oraz zamień:
+
+```swift
+        if player.bundle == musicBundle {
+            return musicLookup()
+        }
+        return ""
+```
+
+na:
+
+```swift
+        if player.bundle == musicBundle {
+            return musicLookup()
+        }
+        if browserBundles.contains(player.bundle) {
+            return videoArtURL
+        }
+        return ""
+```
+
+- [ ] **Step 4: Uruchom testy**
+
+Run: `./"Run Tests.command"`
+Expected: `OK: 106 sprawdzeń`.
+
+- [ ] **Step 5: Dodaj grafikę**
+
+Utwórz `Wokyintosh/Resources/video-art.svg` z dokładnie tą treścią (jedna linia):
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect width="32" height="32" fill="#f1ecd8"/><g fill="#0c0c0c"><rect x="13" y="5" width="6" height="1"/><rect x="10" y="6" width="12" height="1"/><rect x="9" y="7" width="14" height="1"/><rect x="8" y="8" width="16" height="1"/><rect x="7" y="9" width="18" height="1"/><rect x="6" y="10" width="7" height="1"/><rect x="14" y="10" width="12" height="1"/><rect x="6" y="11" width="7" height="1"/><rect x="15" y="11" width="11" height="1"/><rect x="6" y="12" width="7" height="1"/><rect x="16" y="12" width="10" height="1"/><rect x="5" y="13" width="8" height="1"/><rect x="17" y="13" width="10" height="1"/><rect x="5" y="14" width="8" height="1"/><rect x="18" y="14" width="9" height="1"/><rect x="5" y="15" width="8" height="1"/><rect x="19" y="15" width="8" height="1"/><rect x="5" y="16" width="8" height="1"/><rect x="18" y="16" width="9" height="1"/><rect x="5" y="17" width="8" height="1"/><rect x="17" y="17" width="10" height="1"/><rect x="5" y="18" width="8" height="1"/><rect x="16" y="18" width="11" height="1"/><rect x="6" y="19" width="7" height="1"/><rect x="15" y="19" width="11" height="1"/><rect x="6" y="20" width="7" height="1"/><rect x="14" y="20" width="12" height="1"/><rect x="6" y="21" width="20" height="1"/><rect x="7" y="22" width="18" height="1"/><rect x="8" y="23" width="16" height="1"/><rect x="9" y="24" width="14" height="1"/><rect x="10" y="25" width="12" height="1"/><rect x="13" y="26" width="6" height="1"/></g></svg>
+```
+
+Run: `/usr/bin/python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('Wokyintosh/Resources/video-art.svg'); print('SVG_OK')"`
+Expected: `SVG_OK`.
+
+- [ ] **Step 6: Kopiuj grafikę przy budowaniu**
+
+W `Build Wokyintosh.command` zamień linię:
+
+```zsh
+cp "$SRC/Resources/app.js" "$RESOURCES/Resources/app.js"
+```
+
+na:
+
+```zsh
+cp "$SRC/Resources/app.js" "$RESOURCES/Resources/app.js"
+cp "$SRC/Resources/video-art.svg" "$RESOURCES/Resources/video-art.svg"
+```
+
+- [ ] **Step 7: Zbuduj i sprawdź paczkę**
+
+Run: `./"Build Wokyintosh.command" 2>&1 | tail -3 && ls -l /Applications/Wokyintosh.app/Contents/Resources/Resources/video-art.svg && codesign --verify --deep --strict /Applications/Wokyintosh.app && echo PODPIS_OK`
+Expected: `Wokyintosh launched.`, plik `video-art.svg` w paczce, `PODPIS_OK`. Wygląd na ekranie potwierdza Paweł w zadaniu 10.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add Wokyintosh/Resources/video-art.svg Wokyintosh/NowPlayingSelection.swift "Build Wokyintosh.command" Tests/main.swift
+git commit -m "feat: przycisk play zamiast okładki dla przeglądarek"
+```
+
+### Task 10: Test wycieku i weryfikacja na ekranie doku
 
 **Files:**
 - Brak zmian w kodzie. Wyniki trafiają do raportu dla Pawła.
 
 **Interfaces:**
-- Consumes: zainstalowana aplikacja z zadań 7–8, `Tests/helper-smoke.command` (zadanie 5), `Run Tests.command`.
+- Consumes: zainstalowana aplikacja z zadań 7–9, `Tests/helper-smoke.command` (zadanie 5), `Run Tests.command`.
 - Produces: raport z pomiarami i listą sprawdzeń z sekcji 14 specu.
 
 - [ ] **Step 1: Pełne testy i smoke test**
 
 Run: `./"Run Tests.command" | tail -1 && ./Tests/helper-smoke.command`
-Expected: `OK: 104 sprawdzeń`, potem dwie linie `OK:` ze smoke testu.
+Expected: `OK: 106 sprawdzeń`, potem dwie linie `OK:` ze smoke testu.
 
 - [ ] **Step 2: Uruchom 60-minutowy pomiar pamięci w tle**
 
@@ -2170,7 +2296,7 @@ Poproś Pawła o sprawdzenie na ekranie doku i odpowiedź na każdy punkt:
 2. Pauza w Dii: kafelek pokazuje pauzę, pasek stoi.
 3. Start Music przy spauzowanym YouTube: kafelek przechodzi na Music.
 4. Przyciski działają dla Music (wszystkie trzy) i dla YouTube (play/pauza; następny zgodnie z wynikiem zadania 1).
-5. Okładka filmu widoczna (zgodnie z wynikiem zadania 1 i zadania 8).
+5. Przy YouTube w Dii w ramce okładki widać 1-bitowy przycisk play (zadanie 9).
 
 - [ ] **Step 7: Raport i decyzja o wypchnięciu**
 
