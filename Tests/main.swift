@@ -198,4 +198,12 @@ assertEqual(
 
 try? fm.removeItem(at: sandbox)
 
+// Liczby z AppleScript. Przy locale innym niż amerykańskie (u nas en_PL)
+// AppleScript skleja liczby z przecinkiem, np. "214,740997314453".
+assertClose(NowPlayingMonitor.parseNumber("214,740997314453"), 214.741, "muzyka: liczba z przecinkiem", tolerance: 0.001)
+assertClose(NowPlayingMonitor.parseNumber("17.427000045776"), 17.427, "muzyka: liczba z kropką", tolerance: 0.001)
+assertClose(NowPlayingMonitor.parseNumber(" 42 "), 42.0, "muzyka: liczba ze spacjami")
+assertClose(NowPlayingMonitor.parseNumber(""), 0.0, "muzyka: pusty tekst")
+assertClose(NowPlayingMonitor.parseNumber("brak"), 0.0, "muzyka: tekst bez liczby")
+
 finishTests()
