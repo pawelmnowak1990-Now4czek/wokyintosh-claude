@@ -227,4 +227,51 @@ assertEqual(MediaControl.action(from: "playpause"), MediaAction.playPause, "ster
 assertEqual(MediaControl.action(from: "previous"), MediaAction.previous, "sterowanie: akcja previous ze strony")
 assertEqual(MediaControl.action(from: "rm -rf"), nil, "sterowanie: nieznana akcja jest odrzucana")
 
+// Protokół pomocnika MediaRemote: jedna linia JSON na wiadomość.
+func helperLine(_ text: String) -> Data { Data(text.utf8) }
+
+assertEqual(MediaRemoteProtocol.parse(line: helperLine(#"{"type":"hello","version":1}"#)), HelperMessage.hello(version: 1), "protokół: hello")
+assertEqual(
+    MediaRemoteProtocol.parse(line: helperLine(#"{"type":"state","players":[{"bundle":"company.thebrowser.dia","name":"Dia","title":"Film","artist":"Kanał","album":"","duration":4083.08,"elapsed":3048,"rate":1,"timestamp":1789553794.5,"artworkId":"7ec2"}]}"#)),
+    HelperMessage.state([MRPlayer(bundle: "company.thebrowser.dia", name: "Dia", title: "Film", artist: "Kanał", album: "", duration: 4083.08, elapsed: 3048, rate: 1, timestamp: 1789553794.5, artworkId: "7ec2")]),
+    "protokół: state z pełnym odtwarzaczem"
+)
+assertEqual(
+    MediaRemoteProtocol.parse(line: helperLine(#"{"type":"state","players":[{"bundle":"com.apple.Music","title":"Song"},{"title":"bez bundle"}]}"#)),
+    HelperMessage.state([MRPlayer(bundle: "com.apple.Music", name: "", title: "Song", artist: "", album: "", duration: 0, elapsed: 0, rate: 0, timestamp: 0, artworkId: "")]),
+    "protokół: braki to zera i puste teksty, odtwarzacz bez bundle pominięty"
+)
+assertEqual(
+    MediaRemoteProtocol.parse(line: helperLine(#"{"type":"artwork","bundle":"com.apple.Music","artworkId":"a1","mime":"image/png","data":"AQID"}"#)),
+    HelperMessage.artwork(MRArtwork(bundle: "com.apple.Music", artworkId: "a1", mime: "image/png", data: Data([1, 2, 3]))),
+    "protokół: artwork"
+)
+assertEqual(
+    MediaRemoteProtocol.parse(line: helperLine(#"{"type":"artwork","bundle":"com.apple.Music","artworkId":"a1","data":"AQID"}"#)),
+    HelperMessage.artwork(MRArtwork(bundle: "com.apple.Music", artworkId: "a1", mime: "image/jpeg", data: Data([1, 2, 3]))),
+    "protokół: artwork bez mime to image/jpeg"
+)
+assertEqual(MediaRemoteProtocol.parse(line: helperLine(#"{"type":"artwork","bundle":"x","artworkId":"a1","data":"%%%"}"#)), nil, "protokół: artwork z uszkodzonym base64 pominięty")
+assertEqual(
+    MediaRemoteProtocol.parse(line: helperLine(#"{"type":"ack","cmd":"togglePlayPause","bundle":"company.thebrowser.dia","ok":true}"#)),
+    HelperMessage.ack(cmd: "togglePlayPause", bundle: "company.thebrowser.dia", ok: true),
+    "protokół: ack"
+)
+assertEqual(
+    MediaRemoteProtocol.parse(line: helperLine(#"{"type":"error","reason":"missing-symbol","symbol":"MRMediaRemoteGetNowPlayingClients"}"#)),
+    HelperMessage.error(reason: "missing-symbol", symbol: "MRMediaRemoteGetNowPlayingClients"),
+    "protokół: error"
+)
+assertEqual(MediaRemoteProtocol.parse(line: helperLine("{ to nie json")), nil, "protokół: uszkodzona linia")
+assertEqual(MediaRemoteProtocol.parse(line: helperLine(#"{"type":"cos-nowego"}"#)), nil, "protokół: nieznany typ")
+assertEqual(MediaRemoteProtocol.parse(line: Data(repeating: 0x20, count: MediaRemoteProtocol.maxLineBytes + 1)), nil, "protokół: linia ponad 4 MB")
+assertEqual(
+    String(decoding: MediaRemoteProtocol.encode(command: .togglePlayPause, bundle: "company.thebrowser.dia"), as: UTF8.self),
+    "{\"bundle\":\"company.thebrowser.dia\",\"cmd\":\"togglePlayPause\"}\n",
+    "protokół: kodowanie komendy"
+)
+assertEqual(MediaRemoteProtocol.command(for: .previous), MRCommand.previousTrack, "protokół: poprzedni")
+assertEqual(MediaRemoteProtocol.command(for: .playPause), MRCommand.togglePlayPause, "protokół: play/pauza")
+assertEqual(MediaRemoteProtocol.command(for: .next), MRCommand.nextTrack, "protokół: następny")
+
 finishTests()
