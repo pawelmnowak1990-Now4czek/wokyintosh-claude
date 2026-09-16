@@ -348,4 +348,108 @@ assertEqual(HelperRestartPolicy.outcome(exitCode: 2, sawState: false), .startFai
 assertEqual(HelperRestartPolicy.outcome(exitCode: -1, sawState: false), .startFailure, "restart: zabity przed state")
 assertEqual(HelperRestartPolicy.outcome(exitCode: 0, sawState: true), .exitedAfterState, "restart: wyjście po state")
 
+// Nadzór pomocnika na udawanych procesach zsh (bez MediaRemote).
+let helperSandbox = FileManager.default.temporaryDirectory.appendingPathComponent("wokyintosh-helper-\(UUID().uuidString)")
+try! FileManager.default.createDirectory(at: helperSandbox, withIntermediateDirectories: true)
+let fastTiming = MediaRemoteHelper.Timing(helloTimeout: 1, freshness: 1, silenceLimit: 3, killGrace: 0.5, ackTimeout: 0.5)
+
+func fakeHelper(_ name: String, _ script: String, arguments: [String] = []) -> MediaRemoteHelper {
+    let url = helperSandbox.appendingPathComponent(name)
+    try! script.write(to: url, atomically: true, encoding: .utf8)
+    return MediaRemoteHelper(
+        launch: .init(executable: URL(fileURLWithPath: "/bin/zsh"), arguments: [url.path] + arguments),
+        timing: fastTiming
+    )
+}
+
+func waitUntil(_ timeout: TimeInterval, _ condition: () -> Bool) -> Bool {
+    let deadline = Date().addingTimeInterval(timeout)
+    while Date() < deadline {
+        if condition() { return true }
+        Thread.sleep(forTimeInterval: 0.05)
+    }
+    return condition()
+}
+
+func sendAndWait(_ helper: MediaRemoteHelper, _ command: MRCommand, _ bundle: String) -> Bool? {
+    let done = DispatchSemaphore(value: 0)
+    var result: Bool?
+    helper.send(command, bundle: bundle) { ok in
+        result = ok
+        done.signal()
+    }
+    _ = done.wait(timeout: .now() + 3)
+    return result
+}
+
+func launchCount(_ file: URL) -> Int {
+    ((try? String(contentsOf: file, encoding: .utf8)) ?? "").split(separator: "\n").count
+}
+
+let missingLaunch = MediaRemoteHelper(launch: nil, timing: fastTiming)
+missingLaunch.start()
+assertEqual(waitUntil(1) { missingLaunch.isPermanentlyDisabled }, true, "nadzór: brak plików pomocnika wyłącza od razu")
+
+let fakeWorkingScript = #"""
+zmodload zsh/system
+print -r -- '{"type":"hello","version":1}'
+print -r -- '{"type":"artwork","bundle":"company.thebrowser.dia","artworkId":"a1","mime":"image/jpeg","data":"AQID"}'
+while true; do
+  print -r -- '{"type":"state","players":[{"bundle":"company.thebrowser.dia","name":"Dia","title":"Film","rate":1,"timestamp":1000,"artworkId":"a1"}]}'
+  sysread -t 0.2 -i 0 chunk
+  rc=$?
+  (( rc == 5 )) && exit 0
+  if (( rc == 0 )) && [[ $chunk == *togglePlayPause* ]]; then
+    print -r -- '{"type":"ack","cmd":"togglePlayPause","bundle":"company.thebrowser.dia","ok":true}'
+  fi
+done
+"""#
+
+let workingHelper = fakeHelper("fake-ok.zsh", fakeWorkingScript)
+workingHelper.start()
+assertEqual(waitUntil(3) { workingHelper.freshPlayers() != nil }, true, "nadzór: świeży stan z procesu")
+assertEqual(workingHelper.freshPlayers()?.first?.title, "Film", "nadzór: odtwarzacz ze stanu")
+assertEqual(workingHelper.freshPlayers(now: Date().addingTimeInterval(10)), nil, "nadzór: stary stan jest nieświeży")
+assertEqual(workingHelper.artwork(id: "a1")?.data, Data([1, 2, 3]), "nadzór: okładka w magazynie")
+assertEqual(workingHelper.artwork(id: "inna"), nil, "nadzór: nieznana okładka")
+assertEqual(sendAndWait(workingHelper, .togglePlayPause, "company.thebrowser.dia"), true, "nadzór: ack ok z procesu")
+assertEqual(sendAndWait(workingHelper, .nextTrack, "company.thebrowser.dia"), false, "nadzór: brak ack w czasie to porażka")
+assertEqual(sendAndWait(workingHelper, .togglePlayPause, "nie.ma.takiego"), false, "nadzór: odtwarzacz spoza stanu odrzucony")
+workingHelper.stop()
+assertEqual(workingHelper.freshPlayers(), nil, "nadzór: po stop brak stanu")
+
+let unsupportedHelper = fakeHelper("fake-exit3.zsh", #"""
+print -r -- '{"type":"error","reason":"missing-symbol","symbol":"X"}'
+exit 3
+"""#)
+unsupportedHelper.start()
+assertEqual(waitUntil(2) { unsupportedHelper.isPermanentlyDisabled }, true, "nadzór: kod 3 wyłącza")
+
+let crashingHelper = fakeHelper("fake-crash.zsh", "exit 2\n")
+crashingHelper.start()
+assertEqual(waitUntil(6) { crashingHelper.isPermanentlyDisabled }, true, "nadzór: 3 porażki startu wyłączają")
+
+let restartCounter = helperSandbox.appendingPathComponent("restarts.txt")
+let restartingHelper = fakeHelper("fake-restart.zsh", #"""
+print -r -- start >> "$1"
+print -r -- '{"type":"hello","version":1}'
+print -r -- '{"type":"state","players":[]}'
+sleep 0.3
+exit 0
+"""#, arguments: [restartCounter.path])
+restartingHelper.start()
+assertEqual(waitUntil(4) { launchCount(restartCounter) >= 2 }, true, "nadzór: restart po zakończeniu")
+restartingHelper.stop()
+
+let silentCounter = helperSandbox.appendingPathComponent("silent.txt")
+let silentHelper = fakeHelper("fake-silent.zsh", #"""
+print -r -- start >> "$1"
+exec sleep 30
+"""#, arguments: [silentCounter.path])
+silentHelper.start()
+assertEqual(waitUntil(4) { launchCount(silentCounter) >= 2 }, true, "nadzór: brak hello kończy i restartuje proces")
+silentHelper.stop()
+
+try? FileManager.default.removeItem(at: helperSandbox)
+
 finishTests()
