@@ -35,6 +35,10 @@ static const NSUInteger kMaxArtworkBytes = 2 * 1024 * 1024;
 static const int64_t kInfoDeadlineNanos = (int64_t)(0.8 * (double)NSEC_PER_SEC);
 // Najstarszy wpis w cache info, który jeszcze trafia do linii state.
 static const NSTimeInterval kInfoCacheMaxAge = 10.0;
+// Ile trzeba odczekać od wysłania zapytania o info, zanim wolno spróbować znowu dla tego
+// samego bundle — inaczej odtwarzacz, który raz nie odpowiedział, nigdy nie dostałby kolejnej
+// szansy (i po kInfoCacheMaxAge zniknąłby z state na stałe, mimo że dalej gra).
+static const NSTimeInterval kInfoRequestRetryAfter = 3.0;
 
 // Wpis cache info dla jednego bundle: ostatnia udana odpowiedź MediaRemote + czas jej
 // przyjęcia. Odświeżany także wtedy, gdy odpowiedź przychodzi już po budżecie pollu —
@@ -54,7 +58,10 @@ static NSArray *lastKnownClientsList;
 static NSMutableDictionary<NSString *, NSString *> *sentArtworkIds;
 static NSLock *cacheLock;
 static NSMutableDictionary<NSString *, InfoCacheEntry *> *infoCache;
-static NSMutableSet<NSString *> *pendingInfoBundles;
+// bundle -> czas (CFAbsoluteTimeGetCurrent) wysłania zapytania, na które jeszcze nie przyszła
+// odpowiedź. NSNumber zamiast NSSet, żeby dało się rozpoznać "za stare, można ponowić" i
+// odróżnić spóźnioną odpowiedź do starej prośby od odpowiedzi na aktualną.
+static NSMutableDictionary<NSString *, NSNumber *> *pendingInfoRequests;
 
 static NSString *InfoKey(NSString *name) {
     return [@"kMRMediaRemoteNowPlayingInfo" stringByAppendingString:name];
@@ -153,13 +160,19 @@ static NSDictionary *CopyInfo(id client, BOOL includeArtwork) {
     return result;
 }
 
-// Zamawia info dla jednego bundle, o ile poprzednie zamówienie dla niego już dostało
-// odpowiedź. Odpowiedź (nawet spóźniona względem budżetu pollu) zawsze trafia do cache —
-// obsłuży wtedy kolejny poll zamiast tego bieżącego.
+// Zamawia info dla jednego bundle, o ile poprzednie zamówienie dla niego albo już dostało
+// odpowiedź, albo wisi bez odpowiedzi dłużej niż kInfoRequestRetryAfter — inaczej odtwarzacz,
+// który raz nie odpowiedział, nie dostałby już żadnego kolejnego zapytania do końca życia
+// pomocnika. Odpowiedź (nawet spóźniona względem budżetu pollu) zawsze trafia do cache —
+// obsłuży wtedy kolejny poll zamiast tego bieżącego. Callback czyści pending tylko wtedy, gdy
+// wciąż odpowiada za NAJNOWSZĄ prośbę dla tego bundle — spóźniona odpowiedź do starej prośby
+// (sprzed retry) nie może skasować pending nowszej prośby, wysłanej już po retry.
 static void RequestInfoIfNeeded(NSString *bundle, id client, dispatch_group_t group) {
+    NSTimeInterval startedAt = CFAbsoluteTimeGetCurrent();
     [cacheLock lock];
-    BOOL alreadyPending = [pendingInfoBundles containsObject:bundle];
-    if (!alreadyPending) [pendingInfoBundles addObject:bundle];
+    NSNumber *pendingSince = pendingInfoRequests[bundle];
+    BOOL alreadyPending = pendingSince != nil && (startedAt - pendingSince.doubleValue) < kInfoRequestRetryAfter;
+    if (!alreadyPending) pendingInfoRequests[bundle] = @(startedAt);
     [cacheLock unlock];
     if (alreadyPending) return;
 
@@ -172,7 +185,10 @@ static void RequestInfoIfNeeded(NSString *bundle, id client, dispatch_group_t gr
             entry.receivedAt = CFAbsoluteTimeGetCurrent();
             infoCache[bundle] = entry;
         }
-        [pendingInfoBundles removeObject:bundle];
+        NSNumber *currentPendingSince = pendingInfoRequests[bundle];
+        if (currentPendingSince != nil && currentPendingSince.doubleValue == startedAt) {
+            [pendingInfoRequests removeObjectForKey:bundle];
+        }
         [cacheLock unlock];
         dispatch_group_leave(group);
     });
@@ -195,7 +211,10 @@ static void SendArtwork(id client, NSString *bundle, NSString *artworkId) {
 static void PollOnce(void) {
     NSArray *clients = CopyClients();
     NSMutableDictionary *clientsByBundle = [NSMutableDictionary dictionary];
-    NSMutableSet<NSString *> *currentBundles = [NSMutableSet set];
+    // Kolejność pierwszego wystąpienia bundle na liście z MediaRemote — spec §6 pkt 4
+    // rozstrzyga remis timestamp kolejnością z listy, więc players musi być deterministyczne,
+    // nie zależeć od iteracji po secie.
+    NSMutableArray<NSString *> *orderedBundles = [NSMutableArray array];
     dispatch_group_t group = dispatch_group_create();
 
     // Wszystkie zapytania o info idą "na raz" — czekamy raz, wspólnie, zamiast po kolei
@@ -203,8 +222,9 @@ static void PollOnce(void) {
     for (id client in clients) {
         NSString *bundle = SanitizeString((__bridge NSString *)MRClientBundle((__bridge CFTypeRef)client));
         if (bundle.length == 0) continue;
+        if (clientsByBundle[bundle]) continue; // duplikat na liście MediaRemote — bierzemy pierwsze wystąpienie
         clientsByBundle[bundle] = client;
-        [currentBundles addObject:bundle];
+        [orderedBundles addObject:bundle];
         RequestInfoIfNeeded(bundle, client, group);
     }
 
@@ -219,13 +239,16 @@ static void PollOnce(void) {
     NSTimeInterval now = CFAbsoluteTimeGetCurrent();
     [cacheLock lock];
     for (NSString *bundle in infoCache.allKeys) {
-        if (![currentBundles containsObject:bundle]) [infoCache removeObjectForKey:bundle];
+        if (!clientsByBundle[bundle]) [infoCache removeObjectForKey:bundle];
+    }
+    for (NSString *bundle in pendingInfoRequests.allKeys) {
+        if (!clientsByBundle[bundle]) [pendingInfoRequests removeObjectForKey:bundle];
     }
     NSDictionary<NSString *, InfoCacheEntry *> *cacheSnapshot = [infoCache copy];
     [cacheLock unlock];
 
     NSMutableArray *players = [NSMutableArray array];
-    for (NSString *bundle in currentBundles) {
+    for (NSString *bundle in orderedBundles) {
         id client = clientsByBundle[bundle];
         InfoCacheEntry *entry = cacheSnapshot[bundle];
         if (!entry || (now - entry.receivedAt) > kInfoCacheMaxAge) continue;
@@ -323,7 +346,7 @@ void NowPlayingHelperRun(void *unusedA, void *unusedB) {
         sentArtworkIds = [NSMutableDictionary dictionary];
         cacheLock = [NSLock new];
         infoCache = [NSMutableDictionary dictionary];
-        pendingInfoBundles = [NSMutableSet set];
+        pendingInfoRequests = [NSMutableDictionary dictionary];
 
         void *mr = dlopen("/System/Library/PrivateFrameworks/MediaRemote.framework/MediaRemote", RTLD_NOW);
         MRGetClients = RequireSymbol(mr, "MRMediaRemoteGetNowPlayingClients");
