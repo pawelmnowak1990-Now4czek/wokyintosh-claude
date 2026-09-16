@@ -61,6 +61,12 @@ final class NativeBridge {
         }
     }
 
+    /// Wymuszone odświeżenie po komendzie odtwarzacza, żeby ikona i pasek
+    /// nie czekały na kolejne tyknięcie timera.
+    func refreshNowPlaying() {
+        pushNowPlaying()
+    }
+
     private func pushClaude() {
         DispatchQueue.global(qos: .utility).async { [weak self] in
             guard let self else { return }

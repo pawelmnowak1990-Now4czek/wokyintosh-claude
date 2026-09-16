@@ -91,6 +91,13 @@ window.WokyintoshNative={
   }
 };
 
+function sendMedia(action){
+  try{window.webkit.messageHandlers.wokyintosh.postMessage({action:action})}catch(e){}
+}
+[['btn-prev','previous'],['play-state','playpause'],['btn-next','next']].forEach(([id,action])=>{
+  const el=$(id);if(el)el.addEventListener('click',()=>sendMedia(action));
+});
+
 tickClock();setInterval(tickClock,1000);
 
 document.title='Wokyintosh — UI Ready';

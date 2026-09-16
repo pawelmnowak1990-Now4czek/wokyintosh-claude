@@ -206,4 +206,25 @@ assertClose(NowPlayingMonitor.parseNumber(" 42 "), 42.0, "muzyka: liczba ze spac
 assertClose(NowPlayingMonitor.parseNumber(""), 0.0, "muzyka: pusty tekst")
 assertClose(NowPlayingMonitor.parseNumber("brak"), 0.0, "muzyka: tekst bez liczby")
 
+// Sterowanie odtwarzaniem: budowanie komend i mapowanie akcji ze strony.
+assertEqual(
+    MediaControl.script(action: .next, player: .spotify),
+    "tell application \"Spotify\" to next track",
+    "sterowanie: następny w Spotify"
+)
+assertEqual(
+    MediaControl.script(action: .previous, player: .music),
+    "tell application \"Music\" to previous track",
+    "sterowanie: poprzedni w Music"
+)
+assertEqual(
+    MediaControl.script(action: .playPause, player: .music),
+    "tell application \"Music\" to playpause",
+    "sterowanie: pauza/odtwarzanie w Music"
+)
+assertEqual(MediaControl.action(from: "next"), MediaAction.next, "sterowanie: akcja next ze strony")
+assertEqual(MediaControl.action(from: "playpause"), MediaAction.playPause, "sterowanie: akcja playpause ze strony")
+assertEqual(MediaControl.action(from: "previous"), MediaAction.previous, "sterowanie: akcja previous ze strony")
+assertEqual(MediaControl.action(from: "rm -rf"), nil, "sterowanie: nieznana akcja jest odrzucana")
+
 finishTests()

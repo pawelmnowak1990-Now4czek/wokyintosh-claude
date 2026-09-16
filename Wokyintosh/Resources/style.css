@@ -278,3 +278,7 @@ html{
 @keyframes claudeStarA{0%{opacity:1}50%{opacity:0}100%{opacity:0}}
 @keyframes claudeStarB{0%{opacity:0}50%{opacity:1}100%{opacity:1}}
 @keyframes claudeBlink{0%{background:var(--ink);color:var(--paper)}50%{background:transparent;color:var(--ink)}100%{background:transparent;color:var(--ink)}}
+
+/* Przyciski odtwarzania są klikalne. */
+.controls span{cursor:pointer;user-select:none}
+.controls span:active{opacity:.55}

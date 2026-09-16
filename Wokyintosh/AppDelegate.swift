@@ -2,7 +2,7 @@ import Cocoa
 import ServiceManagement
 import WebKit
 
-final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, WKScriptMessageHandler {
     private var window: NSWindow!
     private var webView: WKWebView!
     private var bridge: NativeBridge!
@@ -15,6 +15,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate {
 
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
+        configuration.userContentController.add(self, name: "wokyintosh")
 
         webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = self
@@ -100,6 +101,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         bridge = NativeBridge(webView: webView)
         bridge.start()
+    }
+
+    /// Kliknięcia w przyciski odtwarzania na stronie. Przyjmujemy wyłącznie
+    /// trzy znane akcje, więc strona nie może wykonać dowolnego AppleScriptu.
+    func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard
+            message.name == "wokyintosh",
+            let body = message.body as? [String: Any],
+            let raw = body["action"] as? String,
+            let action = MediaControl.action(from: raw)
+        else { return }
+
+        MediaControl.perform(action)
+
+        // Krótka zwłoka, bo odtwarzacz potrzebuje chwili na zmianę stanu.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            self?.bridge?.refreshNowPlaying()
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
