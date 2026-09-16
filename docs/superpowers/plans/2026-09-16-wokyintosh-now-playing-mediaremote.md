@@ -30,6 +30,8 @@
 - `NativeBridge` zatrzymuje poprzedni bridge przy ponownym `didFinish`, żeby przeładowanie strony nie uruchomiło drugiego pomocnika.
 - Aplikacja loguje (NSLog) zmianę wybranego źródła i wynik ładowania okładki ze schematu `wokyintosh-art`, żeby dało się to sprawdzić bez patrzenia na ekran.
 
+**Po końcowym przeglądzie gałęzi (runda poprawek):** watchdog pomocnika liczy ciszę na czasie działania systemu (`systemUptime`), więc uśpienie Maca nie powoduje restartu; pamięć okładek iTunes jest pod zamkiem; wynik komendy to `HelperCommandResult` (`ok` / `rejected` / `timedOut`), a zapas AppleScript idzie tylko po `rejected` i tylko do aplikacji wybranego odtwarzacza (`NowPlayingSelection.appleScriptFallbackPlayer`, `MediaControl.perform(_:player:)`). Fragmenty kodu w zadaniach 2–7, które tego dotyczą, są nieaktualne — źródłem prawdy jest repo.
+
 ---
 
 ### Task 1: Spike — komendy i okładka na żywo
