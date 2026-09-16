@@ -33,6 +33,24 @@ final class SystemMonitor {
         )
     }
 
+    /// Procent zajętości CPU z dwóch odczytów liczników jądra.
+    /// Kolejność wartości: [user, system, idle, nice] (jak CPU_STATE_*).
+    /// Odejmowanie zawijające (&-) daje poprawny wynik również wtedy,
+    /// gdy 32-bitowy licznik przekręci się (po ok. 50 dniach pracy).
+    static func cpuPercent(previous: [UInt32], current: [UInt32]) -> Double {
+        guard previous.count == 4, current.count == 4 else { return 0 }
+
+        let user = UInt64(current[Int(CPU_STATE_USER)] &- previous[Int(CPU_STATE_USER)])
+        let system = UInt64(current[Int(CPU_STATE_SYSTEM)] &- previous[Int(CPU_STATE_SYSTEM)])
+        let idle = UInt64(current[Int(CPU_STATE_IDLE)] &- previous[Int(CPU_STATE_IDLE)])
+        let nice = UInt64(current[Int(CPU_STATE_NICE)] &- previous[Int(CPU_STATE_NICE)])
+
+        let total = Double(user + system + idle + nice)
+        guard total > 0 else { return 0 }
+
+        return max(0, min(100, Double(user + system + nice) / total * 100))
+    }
+
     private func cpuUsage() -> Double {
         var count = mach_msg_type_number_t(MemoryLayout<host_cpu_load_info_data_t>.size / MemoryLayout<integer_t>.size)
         var info = host_cpu_load_info_data_t()
@@ -54,15 +72,7 @@ final class SystemMonitor {
         defer { previousCPUTicks = current }
         guard let previous = previousCPUTicks else { return 0 }
 
-        let user = current[Int(CPU_STATE_USER)] - previous[Int(CPU_STATE_USER)]
-        let system = current[Int(CPU_STATE_SYSTEM)] - previous[Int(CPU_STATE_SYSTEM)]
-        let idle = current[Int(CPU_STATE_IDLE)] - previous[Int(CPU_STATE_IDLE)]
-        let nice = current[Int(CPU_STATE_NICE)] - previous[Int(CPU_STATE_NICE)]
-
-        let total = Double(user + system + idle + nice)
-        guard total > 0 else { return 0 }
-
-        return max(0, min(100, Double(user + system + nice) / total * 100))
+        return SystemMonitor.cpuPercent(previous: previous, current: current)
     }
 
     private func memoryUsage() -> Double {
