@@ -251,8 +251,6 @@ Zmieniane:
 - Czy strona ładowana z `file://` wyświetla obrazki ze schematu `wokyintosh-art`.
 - Apple może zamknąć furtkę z `/usr/bin/perl` albo usunąć perla z systemu; wtedy działa
   zapas z sekcji 9.
-- Spotify: nie sprawdzaliśmy, czy MediaRemote podaje dla niego okładkę; jeśli nie, kafelek
-  pokaże grafikę zastępczą zamiast obecnej okładki z AppleScript.
 
 ## 13. Gałęzie i atrybucja
 
@@ -270,3 +268,7 @@ Na ekranie Wokyis, po instalacji przez `Build Wokyintosh.command`:
 6. `pkill -f nowplaying-helper` w trakcie odtwarzania: kafelek dalej pokazuje Music przez
    AppleScript, pomocnik wraca sam, a kafelek wraca do danych z MediaRemote.
 7. Po zamknięciu Wokyintosha nie zostaje żaden proces `perl` z pomocnikiem.
+
+Zaakceptowany kompromis (decyzja Pawła, 2026-09-16): jeśli MediaRemote nie poda okładki
+dla Spotify, kafelek pokaże grafikę zastępczą zamiast obecnej okładki z AppleScript.
+Paweł nie używa Spotify, więc nie dokładamy zapasowego odczytu okładki.
