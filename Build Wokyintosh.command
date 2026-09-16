@@ -64,6 +64,9 @@ echo "Compiling native Wokyintosh…"
   "$SRC/ClaudeMonitor.swift" \
   "$SRC/MediaControl.swift" \
   "$SRC/NowPlayingMonitor.swift" \
+  "$SRC/MediaRemoteProtocol.swift" \
+  "$SRC/NowPlayingSelection.swift" \
+  "$SRC/MediaRemoteHelper.swift" \
   "$SRC/WeatherService.swift" \
   -o "$MACOS/Wokyintosh"
 
@@ -76,6 +79,18 @@ cp "$SRC/Resources/AppIcon.icns" "$RESOURCES/AppIcon.icns"
 cp "$SRC/Resources/index.html" "$RESOURCES/Resources/index.html"
 cp "$SRC/Resources/style.css" "$RESOURCES/Resources/style.css"
 cp "$SRC/Resources/app.js" "$RESOURCES/Resources/app.js"
+
+# Pomocnik Now Playing: biblioteka ładowana przez systemowego perla, bo MediaRemote
+# od macOS 15.4 odpowiada tylko procesom Apple.
+echo "Compiling Now Playing helper…"
+mkdir -p "$RESOURCES/Helper"
+xcrun clang -O2 -fobjc-arc -fblocks -dynamiclib \
+  -target "$TARGET" -isysroot "$SDK" \
+  -framework Foundation \
+  "$ROOT/Helper/NowPlayingHelper.m" \
+  -o "$RESOURCES/Helper/NowPlayingHelper.dylib"
+cp "$ROOT/Helper/nowplaying-helper.pl" "$RESOURCES/Helper/nowplaying-helper.pl"
+codesign --force --sign - "$RESOURCES/Helper/NowPlayingHelper.dylib"
 
 # Remove Finder metadata/resource forks before signing.
 # These can be added when files are copied/extracted in Finder and cause

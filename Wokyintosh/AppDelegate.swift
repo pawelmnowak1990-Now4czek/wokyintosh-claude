@@ -99,6 +99,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        // Przeładowanie strony nie może zostawić starego bridge'a z drugim pomocnikiem.
+        bridge?.stop()
         bridge = NativeBridge(webView: webView)
         bridge.start()
     }
@@ -113,12 +115,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
             let action = MediaControl.action(from: raw)
         else { return }
 
-        MediaControl.perform(action)
-
-        // Krótka zwłoka, bo odtwarzacz potrzebuje chwili na zmianę stanu.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            self?.bridge?.refreshNowPlaying()
-        }
+        bridge?.performMedia(action)
     }
 
     func applicationWillTerminate(_ notification: Notification) {

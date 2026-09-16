@@ -4,7 +4,8 @@ import WebKit
 final class NativeBridge {
     private weak var webView: WKWebView?
     private let systemMonitor = SystemMonitor()
-    private let nowPlaying = NowPlayingMonitor()
+    private let helper: MediaRemoteHelper
+    private let nowPlaying: NowPlayingMonitor
     private let weather = WeatherService()
     private let claude = ClaudeMonitor()
 
@@ -15,9 +16,12 @@ final class NativeBridge {
 
     init(webView: WKWebView) {
         self.webView = webView
+        helper = MediaRemoteHelper(launch: MediaRemoteHelper.Launch.bundled())
+        nowPlaying = NowPlayingMonitor(helper: helper)
     }
 
     func start() {
+        helper.start()
         pushSystem()
         pushNowPlaying()
         pushWeather()
@@ -47,6 +51,7 @@ final class NativeBridge {
         musicTimer?.invalidate()
         weatherTimer?.invalidate()
         claudeTimer?.invalidate()
+        helper.stop()
     }
 
     private func pushSystem() {
@@ -65,6 +70,20 @@ final class NativeBridge {
     /// nie czekały na kolejne tyknięcie timera.
     func refreshNowPlaying() {
         pushNowPlaying()
+    }
+
+    /// Przycisk odtwarzania ze strony; kafelek odświeża się 0,3 s po wykonaniu komendy.
+    func performMedia(_ action: MediaAction) {
+        nowPlaying.perform(action) { [weak self] in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                self?.refreshNowPlaying()
+            }
+        }
+    }
+
+    /// Bajty okładki dla schematu `wokyintosh-art`.
+    func artwork(id: String) -> MRArtwork? {
+        helper.artwork(id: id)
     }
 
     private func pushClaude() {

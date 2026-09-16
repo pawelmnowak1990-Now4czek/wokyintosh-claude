@@ -28,6 +28,7 @@ A small native macOS dashboard for live system stats, weather, and Now Playing �
 > - licznik CPU odporny na przekręcenie 32-bitowych liczników jądra,
 > - okno samo ustawia się na wyświetlaczu doku Wokyis,
 > - autostart po zalogowaniu (`SMAppService`, działa też przy podpisie ad-hoc),
+> - Now Playing z systemowego MediaRemote, więc kafelek pokazuje i steruje też np. YouTube w przeglądarce; przy awarii wraca do AppleScript dla Spotify i Music,
 > - identyfikator aplikacji `com.pawelnowak.wokyintosh`, żeby nie kolidować z oryginałem.
 
 ---

@@ -460,4 +460,21 @@ silentHelper.stop()
 
 try? FileManager.default.removeItem(at: helperSandbox)
 
+// Kafelek Now Playing na danych z pomocnika (ścieżka bez AppleScript).
+try! FileManager.default.createDirectory(at: helperSandbox, withIntermediateDirectories: true)
+let tileHelper = fakeHelper("fake-tile.zsh", fakeWorkingScript)
+tileHelper.start()
+_ = waitUntil(3) { tileHelper.freshPlayers() != nil }
+let tileMonitor = NowPlayingMonitor(helper: tileHelper, clock: { Date(timeIntervalSince1970: 1010) })
+assertEqual(
+    tileMonitor.snapshot(),
+    NowPlayingData(playing: true, app: "Dia", track: "Film", artist: "", duration: 0, position: 10, state: "playing", artworkURL: "wokyintosh-art://artwork/a1"),
+    "kafelek: dane z pomocnika i okładka z magazynu"
+)
+let tileCommandDone = DispatchSemaphore(value: 0)
+tileMonitor.perform(.playPause, completionQueue: .global()) { tileCommandDone.signal() }
+assertEqual(tileCommandDone.wait(timeout: .now() + 3) == .success, true, "kafelek: komenda przez pomocnika kończy się completion")
+tileHelper.stop()
+try? FileManager.default.removeItem(at: helperSandbox)
+
 finishTests()

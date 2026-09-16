@@ -23,7 +23,16 @@ struct NowPlayingData: Codable, Equatable {
 }
 
 final class NowPlayingMonitor {
+    private let helper: MediaRemoteHelper?
+    private let clock: () -> Date
+    private let selectionLock = NSLock()
+    private var selectedBundle: String?
     private var artworkCache: [String: String] = [:]
+
+    init(helper: MediaRemoteHelper? = nil, clock: @escaping () -> Date = Date.init) {
+        self.helper = helper
+        self.clock = clock
+    }
 
     /// AppleScript sklejając liczbę z tekstem używa separatora dziesiętnego
     /// z ustawień systemu, więc poza locale amerykańskim dostajemy
@@ -35,7 +44,72 @@ final class NowPlayingMonitor {
         return Double(trimmed.replacingOccurrences(of: ",", with: ".")) ?? 0
     }
 
+    /// Najpierw systemowe Now Playing z pomocnika, przy braku świeżych danych AppleScript (sekcja 9 specu).
     func snapshot() -> NowPlayingData {
+        mediaRemoteSnapshot() ?? appleScriptSnapshot()
+    }
+
+    /// Komenda z przycisku: przez pomocnika do wybranego odtwarzacza, a gdy się nie da,
+    /// AppleScript dla Spotify i Music (sekcja 8 specu). `completion` na `completionQueue`.
+    func perform(_ action: MediaAction, completionQueue: DispatchQueue = .main, completion: @escaping () -> Void) {
+        let viaAppleScript = {
+            DispatchQueue.main.async {
+                MediaControl.perform(action)
+                completionQueue.async(execute: completion)
+            }
+        }
+        guard let helper, let bundle = currentSelection(), helper.freshPlayers() != nil else {
+            viaAppleScript()
+            return
+        }
+        helper.send(MediaRemoteProtocol.command(for: action), bundle: bundle) { ok in
+            if ok {
+                completionQueue.async(execute: completion)
+            } else if NowPlayingSelection.shouldFallBackToAppleScript(bundle: bundle) {
+                viaAppleScript()
+            } else {
+                NSLog("Wokyintosh: \(bundle) nie przyjął komendy \(action.rawValue)")
+                completionQueue.async(execute: completion)
+            }
+        }
+    }
+
+    private func mediaRemoteSnapshot() -> NowPlayingData? {
+        guard
+            let helper,
+            let players = helper.freshPlayers(),
+            let player = NowPlayingSelection.choose(players: players, previousBundle: currentSelection())
+        else {
+            updateSelection(nil)
+            return nil
+        }
+        updateSelection(player)
+        let url = NowPlayingSelection.artworkURL(
+            for: player,
+            hasArtwork: helper.artwork(id: player.artworkId) != nil,
+            musicLookup: { self.artworkURL(track: player.title, artist: player.artist) }
+        )
+        return NowPlayingSelection.nowPlayingData(for: player, now: clock().timeIntervalSince1970, artworkURL: url)
+    }
+
+    private func currentSelection() -> String? {
+        selectionLock.lock()
+        defer { selectionLock.unlock() }
+        return selectedBundle
+    }
+
+    /// Zapamiętuje wybrane źródło i loguje zmianę, żeby dało się ją sprawdzić bez patrzenia na ekran.
+    private func updateSelection(_ player: MRPlayer?) {
+        selectionLock.lock()
+        let changed = selectedBundle != player?.bundle
+        selectedBundle = player?.bundle
+        selectionLock.unlock()
+        if changed {
+            NSLog("Wokyintosh: Now Playing źródło \(player.map { "\($0.name) (\($0.bundle))" } ?? "AppleScript")")
+        }
+    }
+
+    private func appleScriptSnapshot() -> NowPlayingData {
         if isRunning(bundleID: "com.spotify.client"),
            let spotify = spotifySnapshot() {
             return spotify
