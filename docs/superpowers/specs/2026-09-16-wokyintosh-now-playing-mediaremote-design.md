@@ -252,6 +252,14 @@ Zmieniane:
 - Apple może zamknąć furtkę z `/usr/bin/perl` albo usunąć perla z systemu; wtedy działa
   zapas z sekcji 9.
 
+**Wynik spike'a (2026-09-16):**
+- Dia: play/pauza działa: tak; `error` = 0; `statuses` = [__NSCFNumber=0] (oba wywołania CMD=2).
+- Music: następny/poprzedni działa: tak; `error` = 0; `statuses` = [__NSCFNumber=0] (CMD=4 i CMD=5).
+- Okładka z flagą: Dia 0 B (`image/jpeg`), Music 0 B (`(null)`).
+- Decyzja dla pomocnika: `ok` = `error == 0 && statusesOK(statuses)` — przy wszystkich zadziałanych
+  komendach `statuses` zawierało wyłącznie `__NSCFNumber=0`, więc spełnia regułę `statusesOK`
+  z briefu zadania 1.
+
 ## 13. Gałęzie i atrybucja
 
 Praca na `feature/now-playing-mediaremote`. Commity po polsku, bez stopki z atrybucją.
