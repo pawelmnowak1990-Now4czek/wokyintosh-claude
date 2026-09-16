@@ -9,7 +9,7 @@
 	<key>CFBundleIconFile</key>
 	<string>AppIcon.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.salarfarahani.wokyintosh</string>
+	<string>com.pawelnowak.wokyintosh</string>
 	<key>CFBundleName</key>
 	<string>Wokyintosh</string>
 	<key>CFBundlePackageType</key>
@@ -25,7 +25,7 @@
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2026 Salar Farahani</string>
+	<string>© 2026 Salar Farahani · fork © 2026 Paweł Nowak</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Wokyintosh uses your approximate location to display local weather.</string>
 </dict>

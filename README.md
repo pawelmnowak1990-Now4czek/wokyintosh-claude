@@ -20,6 +20,18 @@ A small native macOS dashboard for live system stats, weather, and Now Playing �
 
 ---
 
+> **To jest fork.** Oryginał: [SalarFarahani/Wokyintosh](https://github.com/SalarFarahani/Wokyintosh),
+> licencja MIT, autor Salar Farahani. Zmiany w tym forku:
+>
+> - kafelek z liczbą sesji Claude Code, które czekają na odpowiedź lub właśnie skończyły pracę,
+> - RAM liczony jak w Monitorze aktywności (oryginał wliczał cache plików i pokazywał ~95%),
+> - licznik CPU odporny na przekręcenie 32-bitowych liczników jądra,
+> - okno samo ustawia się na wyświetlaczu doku Wokyis,
+> - autostart po zalogowaniu (`SMAppService`, działa też przy podpisie ad-hoc),
+> - identyfikator aplikacji `com.pawelnowak.wokyintosh`, żeby nie kolidować z oryginałem.
+
+---
+
 ## Why I built Wokyintosh
 
 After several months of owning a **Wokyis M5 Retro Dock Station**, I still couldn't find the dashboard/widget I actually wanted for its display — not even a paid one.
