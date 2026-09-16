@@ -10,6 +10,7 @@ window.addEventListener('load',()=>setTimeout(dismissBoot,550));
 
 const $=id=>document.getElementById(id);
 let lastArtwork="";
+let lastFailedArtwork=""; // adres już zgłoszony jako błąd — bez tego log rósłby co 1,8 s przy powtarzającym się niepowodzeniu
 
 function tickClock(){
   const n=new Date();
@@ -90,8 +91,8 @@ function setArtwork(url){
   if(!url){img.classList.add('hidden');fallback.style.display='block';lastArtwork='';return}
   if(url===lastArtwork&&!img.classList.contains('hidden'))return;
   lastArtwork=url;
-  img.onload=()=>{img.classList.remove('hidden');fallback.style.display='block';reportArtwork(url,true)};
-  img.onerror=()=>{img.classList.add('hidden');fallback.style.display='block';lastArtwork='';reportArtwork(url,false)};
+  img.onload=()=>{img.classList.remove('hidden');fallback.style.display='block';lastFailedArtwork='';reportArtwork(url,true)};
+  img.onerror=()=>{img.classList.add('hidden');fallback.style.display='block';lastArtwork='';if(url!==lastFailedArtwork){reportArtwork(url,false);lastFailedArtwork=url}};
   img.src=url;
 }
 function meter(id,v){$(id).style.width=`${Math.max(0,Math.min(100,Number(v)||0))}%`}
