@@ -67,6 +67,7 @@ echo "Compiling native Wokyintosh…"
   "$SRC/MediaRemoteProtocol.swift" \
   "$SRC/NowPlayingSelection.swift" \
   "$SRC/MediaRemoteHelper.swift" \
+  "$SRC/ArtworkSchemeHandler.swift" \
   "$SRC/WeatherService.swift" \
   -o "$MACOS/Wokyintosh"
 

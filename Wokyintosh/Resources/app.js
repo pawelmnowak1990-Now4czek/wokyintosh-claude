@@ -80,13 +80,18 @@ function weatherSVG(type){
   };
   return icons[type]||icons.cloud;
 }
+/* Wynik ładowania okładki z MediaRemote trafia do logu aplikacji (sprawdzenie bez ekranu). */
+function reportArtwork(url,ok){
+  if(!String(url).startsWith('wokyintosh-art:'))return;
+  try{window.webkit.messageHandlers.wokyintosh.postMessage({artworkEvent:ok?'loaded':'failed'})}catch(e){}
+}
 function setArtwork(url){
   const img=$('artwork'),fallback=$('fallback-art');
   if(!url){img.classList.add('hidden');fallback.style.display='block';lastArtwork='';return}
   if(url===lastArtwork&&!img.classList.contains('hidden'))return;
   lastArtwork=url;
-  img.onload=()=>{img.classList.remove('hidden');fallback.style.display='block'};
-  img.onerror=()=>{img.classList.add('hidden');fallback.style.display='block';lastArtwork=''};
+  img.onload=()=>{img.classList.remove('hidden');fallback.style.display='block';reportArtwork(url,true)};
+  img.onerror=()=>{img.classList.add('hidden');fallback.style.display='block';lastArtwork='';reportArtwork(url,false)};
   img.src=url;
 }
 function meter(id,v){$(id).style.width=`${Math.max(0,Math.min(100,Number(v)||0))}%`}

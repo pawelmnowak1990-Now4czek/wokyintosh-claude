@@ -16,6 +16,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
         configuration.userContentController.add(self, name: "wokyintosh")
+        // Okładki z MediaRemote; bridge powstaje dopiero po załadowaniu strony, stąd słabe self.
+        configuration.setURLSchemeHandler(
+            ArtworkSchemeHandler { [weak self] id in self?.bridge?.artwork(id: id) },
+            forURLScheme: ArtworkURL.scheme
+        )
 
         webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = self
@@ -108,6 +113,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
     /// Kliknięcia w przyciski odtwarzania na stronie. Przyjmujemy wyłącznie
     /// trzy znane akcje, więc strona nie może wykonać dowolnego AppleScriptu.
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
+        if message.name == "wokyintosh",
+           let body = message.body as? [String: Any],
+           let event = body["artworkEvent"] as? String {
+            NSLog("Wokyintosh: okładka z MediaRemote \(event == "loaded" ? "załadowana" : "nie załadowała się")")
+            return
+        }
+
         guard
             message.name == "wokyintosh",
             let body = message.body as? [String: Any],
