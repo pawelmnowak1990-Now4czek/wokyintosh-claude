@@ -1,4 +1,5 @@
 import Cocoa
+import ServiceManagement
 import WebKit
 
 final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate {
@@ -7,6 +8,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate {
     private var bridge: NativeBridge!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Rejestracja przed budową menu, bo pozycja "Open at Login"
+        // odczytuje stan przy tworzeniu.
+        registerLoginItemIfPossible()
         buildMainMenu()
 
         let configuration = WKWebViewConfiguration()
@@ -106,6 +110,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate {
         true
     }
 
+    /// Rejestracja autostartu działa tylko dla aplikacji zainstalowanej
+    /// w /Applications. Uruchomiona z build/ albo z Pobranych trafia do
+    /// tymczasowej kopii (App Translocation) i rejestracja nie ma sensu.
+    private func registerLoginItemIfPossible() {
+        guard Bundle.main.bundlePath.hasPrefix("/Applications/") else { return }
+        guard SMAppService.mainApp.status == .notRegistered else { return }
+        do {
+            try SMAppService.mainApp.register()
+        } catch {
+            NSLog("Wokyintosh: nie udało się zarejestrować autostartu: \(error)")
+        }
+    }
+
+    @objc private func toggleLoginItem(_ sender: NSMenuItem) {
+        do {
+            if SMAppService.mainApp.status == .enabled {
+                try SMAppService.mainApp.unregister()
+                sender.state = .off
+            } else {
+                try SMAppService.mainApp.register()
+                sender.state = .on
+            }
+        } catch {
+            NSLog("Wokyintosh: przełączenie autostartu nie powiodło się: \(error)")
+        }
+    }
+
     /// Ekran dokowanego wyświetlacza: najpierw po nazwie, potem po rozdzielczości.
     private func dockScreen() -> NSScreen? {
         let screens = NSScreen.screens
@@ -134,6 +165,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate {
         mainMenu.addItem(appMenuItem)
 
         let appMenu = NSMenu()
+
+        let loginItem = NSMenuItem(
+            title: "Open at Login",
+            action: #selector(toggleLoginItem(_:)),
+            keyEquivalent: ""
+        )
+        loginItem.target = self
+        loginItem.state = SMAppService.mainApp.status == .enabled ? .on : .off
+        appMenu.addItem(loginItem)
+        appMenu.addItem(NSMenuItem.separator())
+
         appMenu.addItem(
             NSMenuItem(
                 title: "Quit Wokyintosh",

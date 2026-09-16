@@ -56,6 +56,7 @@ echo "Compiling native Wokyintosh…"
   -framework AppKit \
   -framework WebKit \
   -framework CoreLocation \
+  -framework ServiceManagement \
   "$SRC/main.swift" \
   "$SRC/AppDelegate.swift" \
   "$SRC/NativeBridge.swift" \
@@ -99,6 +100,16 @@ echo ""
 echo "Build successful:"
 echo "$APP"
 echo ""
+# Instalacja do /Applications — autostart nie zadziała z build/ ani z Pobranych,
+# bo macOS uruchamia takie kopie z katalogu tymczasowego (App Translocation).
+if [ "${INSTALL:-1}" = "1" ]; then
+  echo "Instalowanie do /Applications…"
+  pkill -x Wokyintosh 2>/dev/null || true
+  rm -rf "/Applications/Wokyintosh.app"
+  /usr/bin/ditto "$APP" "/Applications/Wokyintosh.app"
+  APP="/Applications/Wokyintosh.app"
+fi
+
 echo "Opening Wokyintosh…"
 pkill -x Wokyintosh 2>/dev/null || true
 sleep 1
