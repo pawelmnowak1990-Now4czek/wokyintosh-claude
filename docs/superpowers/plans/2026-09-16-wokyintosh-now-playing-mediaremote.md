@@ -735,6 +735,8 @@ git commit -m "feat: polityka restartów pomocnika MediaRemote"
 
 ### Task 5: Pomocnik MediaRemote i smoke test
 
+Po przeglądzie (runda poprawek 1): pętla pomocnika działa w eksportowanej `NowPlayingHelperRun` wołanej przez perla jako XSUB (nie w konstruktorze), klienci są odpytywani równolegle z limitem 0,8 s i pamięcią ostatniej odpowiedzi przez 10 s, a JSON jest odporny na NaN/Inf i niepoprawne UTF-8 — kod w repo jest źródłem prawdy dla tych fragmentów.
+
 **Files:**
 - Create: `Helper/NowPlayingHelper.m`
 - Create: `Helper/nowplaying-helper.pl`

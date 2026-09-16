@@ -81,8 +81,16 @@ a `MediaControl` zostaje czystą ścieżką AppleScript.
 
 Pomocnik uruchamiany jest poleceniem:
 `/usr/bin/perl <app>/Contents/Resources/Helper/nowplaying-helper.pl <app>/Contents/Resources/Helper/NowPlayingHelper.dylib`.
-Pętla działa w konstruktorze biblioteki (`__attribute__((constructor))`), wejście czytane
-jest na osobnym wątku, a stdout jest buforowany liniami.
+Starter ładuje bibliotekę (`dl_load_file`), znajduje eksportowaną funkcję `NowPlayingHelperRun`
+(`dl_find_symbol`) i woła ją jako XSUB (`dl_install_xsub`). Pętla nie działa w konstruktorze,
+bo kod konstruktora wykonuje się wewnątrz `dlopen` i trzymałby blokadę dyld przez całe życie
+procesu (każdy leniwy `dlopen` w innym wątku by się zawiesił — ustalone w przeglądzie zadania 5).
+Wejście czytane jest na osobnym wątku, a każda linia wyjścia jest od razu wypychana.
+
+Odczyt stanu: pomocnik pyta wszystkich klientów naraz i czeka najwyżej 0,8 s. Ostatnia udana
+odpowiedź każdego klienta jest pamiętana (także spóźniona) i używana przez 10 s, więc klient,
+który chwilowo nie odpowiada, nie znika z linii `state`. Liczby nieskończone i NaN zamieniane są
+na 0, a teksty czyszczone do poprawnego UTF-8, żeby zapis JSON nigdy nie wywrócił pomocnika.
 
 ## 5. Protokół
 
