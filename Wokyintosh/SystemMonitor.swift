@@ -51,6 +51,26 @@ final class SystemMonitor {
         return max(0, min(100, Double(user + system + nice) / total * 100))
     }
 
+    /// Procent zajętej pamięci liczony tak, jak "Użyta pamięć" w Monitorze aktywności:
+    /// pamięć aplikacji (internal bez purgeable) + wired + skompresowana.
+    /// Stron `inactive` i `active` nie wliczamy, bo to głównie cache plików,
+    /// który system oddaje od ręki.
+    static func memoryPercent(
+        internalPages: UInt64,
+        purgeablePages: UInt64,
+        wiredPages: UInt64,
+        compressorPages: UInt64,
+        pageSize: UInt64,
+        totalBytes: UInt64
+    ) -> Double {
+        guard totalBytes > 0 else { return 0 }
+
+        let appPages = internalPages > purgeablePages ? internalPages - purgeablePages : 0
+        let used = (appPages + wiredPages + compressorPages) * pageSize
+
+        return max(0, min(100, Double(used) / Double(totalBytes) * 100))
+    }
+
     private func cpuUsage() -> Double {
         var count = mach_msg_type_number_t(MemoryLayout<host_cpu_load_info_data_t>.size / MemoryLayout<integer_t>.size)
         var info = host_cpu_load_info_data_t()
@@ -88,16 +108,14 @@ final class SystemMonitor {
         }
         guard result == KERN_SUCCESS else { return 0 }
 
-        let pageSize = UInt64(vm_kernel_page_size)
-        let active = UInt64(vmStats.active_count) * pageSize
-        let inactive = UInt64(vmStats.inactive_count) * pageSize
-        let wired = UInt64(vmStats.wire_count) * pageSize
-        let compressed = UInt64(vmStats.compressor_page_count) * pageSize
-        let used = active + inactive + wired + compressed
-        let total = ProcessInfo.processInfo.physicalMemory
-
-        guard total > 0 else { return 0 }
-        return max(0, min(100, Double(used) / Double(total) * 100))
+        return SystemMonitor.memoryPercent(
+            internalPages: UInt64(vmStats.internal_page_count),
+            purgeablePages: UInt64(vmStats.purgeable_count),
+            wiredPages: UInt64(vmStats.wire_count),
+            compressorPages: UInt64(vmStats.compressor_page_count),
+            pageSize: UInt64(vm_kernel_page_size),
+            totalBytes: ProcessInfo.processInfo.physicalMemory
+        )
     }
 
     private func diskStats() -> (freeGB: Double, usedPct: Double) {
