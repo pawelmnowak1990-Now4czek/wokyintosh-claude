@@ -25,6 +25,16 @@ struct NowPlayingData: Codable {
 final class NowPlayingMonitor {
     private var artworkCache: [String: String] = [:]
 
+    /// AppleScript sklejając liczbę z tekstem używa separatora dziesiętnego
+    /// z ustawień systemu, więc poza locale amerykańskim dostajemy
+    /// "214,740997314453". Double(_:) czyta tylko kropkę i zwracał nil,
+    /// przez co czas i długość utworu były zerowe, a pasek postępu stał w miejscu.
+    static func parseNumber(_ text: String) -> Double {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let value = Double(trimmed) { return value }
+        return Double(trimmed.replacingOccurrences(of: ",", with: ".")) ?? 0
+    }
+
     func snapshot() -> NowPlayingData {
         if isRunning(bundleID: "com.spotify.client"),
            let spotify = spotifySnapshot() {
@@ -80,8 +90,8 @@ final class NowPlayingMonitor {
             app: "Spotify",
             track: parts[0],
             artist: parts[1],
-            duration: Double(parts[2]) ?? 0,
-            position: Double(parts[3]) ?? 0,
+            duration: NowPlayingMonitor.parseNumber(parts[2]),
+            position: NowPlayingMonitor.parseNumber(parts[3]),
             state: parts[4],
             artworkURL: parts[5]
         )
@@ -114,8 +124,8 @@ final class NowPlayingMonitor {
             app: "Music",
             track: track,
             artist: artist,
-            duration: Double(parts[2]) ?? 0,
-            position: Double(parts[3]) ?? 0,
+            duration: NowPlayingMonitor.parseNumber(parts[2]),
+            position: NowPlayingMonitor.parseNumber(parts[3]),
             state: parts[4],
             artworkURL: artworkURL(track: track, artist: artist)
         )
