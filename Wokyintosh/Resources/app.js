@@ -15,7 +15,47 @@ function tickClock(){
   const n=new Date();
   $('time').textContent=new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false}).format(n);
   $('date').textContent=new Intl.DateTimeFormat('en-GB',{weekday:'long',day:'numeric',month:'short',year:'numeric'}).format(n).replace(',',' ·');
+  alignTimeBlock();
 }
+
+/* Zegar i data mają tworzyć jeden blok: wspólna lewa krawędź i ta sama
+   szerokość. Czcionka ma różne odsadki boczne (jedynka jest wąska, zero
+   szerokie), więc samo ustawienie w CSS nie wystarcza — mierzymy obrys
+   tekstu i korygujemy przesunięciem oraz odstępem między literami. */
+let inkCtx=null;
+function inkMetrics(el,spacingPx){
+  const s=getComputedStyle(el);
+  if(!inkCtx)inkCtx=document.createElement('canvas').getContext('2d');
+  if(!inkCtx||!('letterSpacing' in inkCtx))return null;
+  inkCtx.font=`${s.fontStyle} ${s.fontWeight} ${s.fontSize} ${s.fontFamily}`;
+  inkCtx.letterSpacing=spacingPx===undefined?s.letterSpacing:spacingPx+'px';
+  const m=inkCtx.measureText(el.textContent);
+  return {size:parseFloat(s.fontSize),left:-m.actualBoundingBoxLeft,width:m.actualBoundingBoxRight+m.actualBoundingBoxLeft};
+}
+
+let alignKey='';
+function alignTimeBlock(force){
+  const t=$('time'),d=$('date');
+  if(!t||!d)return;
+  const key=`${t.textContent}|${d.textContent}|${innerWidth}x${innerHeight}`;
+  if(key===alignKey&&!force)return;
+  const tm=inkMetrics(t);
+  let dm=inkMetrics(d,0);
+  if(!tm||!dm||tm.width<=0||dm.width<=0)return;
+  alignKey=key;
+  t.style.transform=`translateX(${Math.round(-tm.left)}px)`;
+  const gaps=Math.max(d.textContent.length-1,1);
+  const floor=-0.06*dm.size,ceiling=0.3*dm.size;
+  let spacing=0;
+  for(let i=0;i<3;i++){
+    spacing=Math.min(ceiling,Math.max(floor,spacing+(tm.width-dm.width)/gaps));
+    dm=inkMetrics(d,spacing);
+    if(!dm)return;
+  }
+  d.style.letterSpacing=spacing.toFixed(2)+'px';
+  d.style.transform=`translateX(${Math.round(-dm.left)}px)`;
+}
+window.addEventListener('resize',()=>alignTimeBlock(true));
 
 function weatherMeta(code){
   const m={
