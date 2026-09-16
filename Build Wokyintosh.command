@@ -60,6 +60,7 @@ echo "Compiling native Wokyintosh…"
   "$SRC/AppDelegate.swift" \
   "$SRC/NativeBridge.swift" \
   "$SRC/SystemMonitor.swift" \
+  "$SRC/ClaudeMonitor.swift" \
   "$SRC/NowPlayingMonitor.swift" \
   "$SRC/WeatherService.swift" \
   -o "$MACOS/Wokyintosh"

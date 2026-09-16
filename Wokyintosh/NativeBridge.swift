@@ -6,10 +6,12 @@ final class NativeBridge {
     private let systemMonitor = SystemMonitor()
     private let nowPlaying = NowPlayingMonitor()
     private let weather = WeatherService()
+    private let claude = ClaudeMonitor()
 
     private var systemTimer: Timer?
     private var musicTimer: Timer?
     private var weatherTimer: Timer?
+    private var claudeTimer: Timer?
 
     init(webView: WKWebView) {
         self.webView = webView
@@ -19,6 +21,7 @@ final class NativeBridge {
         pushSystem()
         pushNowPlaying()
         pushWeather()
+        pushClaude()
 
         systemTimer = Timer.scheduledTimer(withTimeInterval: 2.2, repeats: true) { [weak self] _ in
             self?.pushSystem()
@@ -29,16 +32,21 @@ final class NativeBridge {
         weatherTimer = Timer.scheduledTimer(withTimeInterval: 600, repeats: true) { [weak self] _ in
             self?.pushWeather()
         }
+        claudeTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+            self?.pushClaude()
+        }
 
         RunLoop.main.add(systemTimer!, forMode: .common)
         RunLoop.main.add(musicTimer!, forMode: .common)
         RunLoop.main.add(weatherTimer!, forMode: .common)
+        RunLoop.main.add(claudeTimer!, forMode: .common)
     }
 
     func stop() {
         systemTimer?.invalidate()
         musicTimer?.invalidate()
         weatherTimer?.invalidate()
+        claudeTimer?.invalidate()
     }
 
     private func pushSystem() {
@@ -50,6 +58,14 @@ final class NativeBridge {
         DispatchQueue.global(qos: .utility).async { [weak self] in
             let data = self?.nowPlaying.snapshot() ?? NowPlayingData.empty
             self?.send(function: "window.WokyintoshNative.updateNowPlaying", payload: data)
+        }
+    }
+
+    private func pushClaude() {
+        DispatchQueue.global(qos: .utility).async { [weak self] in
+            guard let self else { return }
+            let data = self.claude.snapshot()
+            self.send(function: "window.WokyintoshNative.updateClaude", payload: data)
         }
     }
 
