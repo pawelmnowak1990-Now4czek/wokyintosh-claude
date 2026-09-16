@@ -14,7 +14,7 @@ Przyciski i okładka mają działać dla każdego źródła, które je udostępn
 ## 2. Zakres
 
 W zakresie:
-1. Pomocnik w C ładowany przez `/usr/bin/perl`, który czyta stan wszystkich odtwarzaczy
+1. Pomocnik w Objective-C (biblioteka dynamiczna) ładowany przez `/usr/bin/perl`, który czyta stan wszystkich odtwarzaczy
    z MediaRemote i wykonuje komendy.
 2. Nadzór nad pomocnikiem w aplikacji: start, restart, wykrywanie zawieszenia, trwały zapas.
 3. Wybór odtwarzacza do pokazania i doliczanie pozycji.
@@ -48,15 +48,23 @@ z AppleScript, gdy MediaRemote jej nie poda.
 - `ElapsedTime` to pozycja z chwili `Timestamp`, nie bieżąca (3048 s o 10:16:34).
 - Pomiar pomocnika w pętli co 1 s przez 20 odczytów: pamięć (phys_footprint) 2,9 MB na
   starcie, 4,8 MB po 10. i 20. odczycie, CPU 0,19% jednego rdzenia.
-- Istnieją eksporty `MRMediaRemoteSendCommandToClient`,
-  `MRMediaRemoteGetNowPlayingInfoWithOptionalArtwork` i `MRNowPlayingClientGetDisplayName`;
-  ich sygnatur jeszcze nie sprawdzaliśmy (patrz sekcja 12).
+- Z deasemblacji (podczas pisania planu):
+  - `MRMediaRemoteGetNowPlayingInfoWithOptionalArtwork(origin, includeArtwork, queue, block)`
+    to `ForClient` z klientem `NULL`, więc trzeci argument `ForClient` jest flagą okładki
+    (sprawdzany jako 32-bitowa wartość, `cbz w22`); przy fladze MediaRemote dociąga
+    kolejkę odtwarzania z okładką.
+  - `MRMediaRemoteSendCommandToClient(command, options, origin, client, appOptions, queue,
+    block)` zwraca `Boolean`; blok dostaje `(uint32_t error, CFArrayRef statuses)`
+    (opakowanie `MRCommandResult`). Wartości komend: `togglePlayPause` = 2,
+    `nextTrack` = 4, `previousTrack` = 5.
+  - `MRNowPlayingClientGetDisplayName(client)` zwraca `CFStringRef`.
+  Działanie komend i okładki na żywo sprawdza spike (sekcja 11).
 
 ## 4. Architektura
 
 | Element | Plik | Odpowiedzialność |
 |---|---|---|
-| Pomocnik | `Helper/NowPlayingHelper.c` → `NowPlayingHelper.dylib` | Co 1 s wypisuje stan odtwarzaczy, wysyła okładki, wykonuje komendy. Bez decyzji o wyborze źródła. |
+| Pomocnik | `Helper/NowPlayingHelper.m` (Objective-C) → `NowPlayingHelper.dylib` | Co 1 s wypisuje stan odtwarzaczy, wysyła okładki, wykonuje komendy. Bez decyzji o wyborze źródła. |
 | Starter | `Helper/nowplaying-helper.pl` | Ładuje dylib przez DynaLoader; przy błędzie ładowania wypisuje błąd na stderr i kończy kodem 2. |
 | Protokół | `Wokyintosh/MediaRemoteProtocol.swift` | Typy wiadomości, parsowanie linii, kodowanie komend. Czysta logika. |
 | Wybór | `Wokyintosh/NowPlayingSelection.swift` | Wybór odtwarzacza, doliczanie pozycji, mapowanie na `NowPlayingData`, reguły adresu okładki. Czysta logika. |
@@ -190,7 +198,7 @@ aplikacja wysyła komendę tylko do `bundle` z ostatniego stanu.
 ## 10. Pliki
 
 Nowe:
-- `Helper/NowPlayingHelper.c`
+- `Helper/NowPlayingHelper.m`
 - `Helper/nowplaying-helper.pl`
 - `Wokyintosh/MediaRemoteProtocol.swift`
 - `Wokyintosh/NowPlayingSelection.swift`
@@ -213,10 +221,9 @@ Zmieniane:
 ## 11. Testy
 
 1. Spike przed kodem (pierwsze zadanie planu), na YouTube w Dii i na Music:
-   - sygnatura i działanie `MRMediaRemoteSendCommandToClient` dla `togglePlayPause`,
-     `nextTrack`, `previousTrack`,
-   - sposób pobrania bajtów okładki (argument `options`,
-     `MRMediaRemoteGetNowPlayingInfoWithOptionalArtwork` albo inna droga),
+   - działanie `MRMediaRemoteSendCommandToClient` (sygnatura z sekcji 3) dla
+     `togglePlayPause`, `nextTrack`, `previousTrack` oraz znaczenie `error` i `statuses`,
+   - bajty okładki z flagą `includeArtwork` dla Dii i Music,
    - wynik dopisany do sekcji 12 tego dokumentu przed dalszą pracą.
 2. Testy jednostkowe w `Run Tests.command`:
    - parsowanie `hello`, `state`, `artwork`, `ack`, `error`; linie uszkodzone, z brakami,
@@ -237,9 +244,9 @@ Zmieniane:
 
 ## 12. Otwarte niewiadome
 
-- Sygnatura `MRMediaRemoteSendCommandToClient` i to, czy Dia/YouTube reaguje na komendy.
-  Jeśli nie: przyciski dla źródeł spoza Spotify/Music nic nie robią (tylko wpis w logu).
-- Pobranie bajtów okładki. Jeśli się nie da: reguły 2 i 3 z sekcji 7.
+- Czy Dia/YouTube reaguje na komendy wysłane z odczytaną sygnaturą. Jeśli nie: przyciski
+  dla źródeł spoza Spotify/Music nic nie robią (tylko wpis w logu).
+- Czy flaga `includeArtwork` daje bajty okładki. Jeśli nie: reguły 2 i 3 z sekcji 7.
 - Czy YouTube obsługuje `nextTrack`/`previousTrack` poza playlistą.
 - Czy strona ładowana z `file://` wyświetla obrazki ze schematu `wokyintosh-art`.
 - Apple może zamknąć furtkę z `/usr/bin/perl` albo usunąć perla z systemu; wtedy działa
