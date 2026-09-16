@@ -15,6 +15,7 @@ xcrun swiftc -sdk "$SDK" -target "$TARGET" \
   "Wokyintosh/MediaControl.swift" \
   "Wokyintosh/MediaRemoteProtocol.swift" \
   "Wokyintosh/NowPlayingSelection.swift" \
+  "Wokyintosh/MediaRemoteHelper.swift" \
   -o "$OUT"
 
 echo "Uruchamianie…"

@@ -317,4 +317,35 @@ assertEqual(NowPlayingSelection.shouldFallBackToAppleScript(bundle: musicBundle)
 assertEqual(NowPlayingSelection.shouldFallBackToAppleScript(bundle: "com.spotify.client"), true, "zapas: Spotify")
 assertEqual(NowPlayingSelection.shouldFallBackToAppleScript(bundle: diaBundle), false, "zapas: Dia bez AppleScript")
 
+// Polityka restartów pomocnika (sekcja 9 specu).
+var restartPolicy = HelperRestartPolicy()
+assertEqual(restartPolicy.record(.exitedAfterState), 1, "restart: pierwsza przerwa 1 s")
+assertEqual(restartPolicy.record(.exitedAfterState), 2, "restart: druga przerwa 2 s")
+for _ in 0..<4 { _ = restartPolicy.record(.exitedAfterState) }
+assertEqual(restartPolicy.record(.exitedAfterState), 60, "restart: przerwa dochodzi do 60 s")
+assertEqual(restartPolicy.record(.exitedAfterState), 60, "restart: przerwa zostaje na 60 s")
+restartPolicy.recordState()
+assertEqual(restartPolicy.record(.startFailure), 1, "restart: state zeruje przerwę")
+assertEqual(restartPolicy.record(.startFailure), 2, "restart: druga porażka startu")
+assertEqual(restartPolicy.record(.startFailure), nil, "restart: trzecia porażka startu wyłącza")
+assertEqual(restartPolicy.permanentlyDisabled, true, "restart: wyłączony na stałe")
+assertEqual(restartPolicy.record(.exitedAfterState), nil, "restart: wyłączony nie wraca")
+
+var unsupportedPolicy = HelperRestartPolicy()
+assertEqual(unsupportedPolicy.record(.unsupported), nil, "restart: kod 3 wyłącza od razu")
+var noPerlPolicy = HelperRestartPolicy()
+assertEqual(noPerlPolicy.record(.launchFailed), nil, "restart: brak perla wyłącza od razu")
+
+var resetPolicy = HelperRestartPolicy()
+_ = resetPolicy.record(.startFailure)
+_ = resetPolicy.record(.startFailure)
+resetPolicy.recordState()
+assertEqual(resetPolicy.record(.startFailure), 1, "restart: state zeruje licznik porażek")
+assertEqual(resetPolicy.consecutiveStartFailures, 1, "restart: licznik porażek liczy od nowa")
+
+assertEqual(HelperRestartPolicy.outcome(exitCode: 3, sawState: true), .unsupported, "restart: kod 3 to brak wsparcia")
+assertEqual(HelperRestartPolicy.outcome(exitCode: 2, sawState: false), .startFailure, "restart: kod 2 przed state")
+assertEqual(HelperRestartPolicy.outcome(exitCode: -1, sawState: false), .startFailure, "restart: zabity przed state")
+assertEqual(HelperRestartPolicy.outcome(exitCode: 0, sawState: true), .exitedAfterState, "restart: wyjście po state")
+
 finishTests()
