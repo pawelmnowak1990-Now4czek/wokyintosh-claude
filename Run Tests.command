@@ -10,6 +10,7 @@ echo "Kompilacja testów…"
 xcrun swiftc -sdk "$SDK" -target "$TARGET" \
   "Tests/main.swift" \
   "Wokyintosh/SystemMonitor.swift" \
+  "Wokyintosh/ClaudeMonitor.swift" \
   -o "$OUT"
 
 echo "Uruchamianie…"

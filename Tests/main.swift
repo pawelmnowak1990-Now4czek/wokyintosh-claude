@@ -73,4 +73,81 @@ assertClose(
     "ram: zerowa pamięć całkowita"
 )
 
+// Klasyfikacja sesji Claude Code. Czas w milisekundach, jak w plikach stanu.
+let now: Double = 1_800_000_000_000
+let minute: Double = 60_000
+
+func probe(
+    pid: Int32 = 100,
+    kind: String = "interactive",
+    status: String,
+    startedAgo: Double = 60 * minute,
+    statusAgo: Double = 0,
+    updatedAgo: Double? = nil
+) -> ClaudeProbe {
+    ClaudeProbe(
+        pid: pid,
+        kind: kind,
+        status: status,
+        startedAt: now - startedAgo,
+        updatedAt: now - (updatedAgo ?? statusAgo),
+        statusUpdatedAt: now - statusAgo
+    )
+}
+
+func classify(_ probes: [ClaudeProbe], alive: Bool = true) -> ClaudeSnapshot {
+    ClaudeLogic.classify(
+        probes: probes,
+        nowMilliseconds: now,
+        windowSeconds: 15 * 60,
+        isAlive: { _ in alive }
+    )
+}
+
+assertEqual(
+    classify([probe(status: "waiting")]),
+    ClaudeSnapshot(available: true, attention: 1, waiting: 1, finished: 0, busy: 0),
+    "sesja czekająca na odpowiedź"
+)
+assertEqual(
+    classify([probe(status: "idle", statusAgo: 5 * minute)]),
+    ClaudeSnapshot(available: true, attention: 1, waiting: 0, finished: 1, busy: 0),
+    "sesja skończona w oknie 15 minut"
+)
+assertEqual(
+    classify([probe(status: "idle", statusAgo: 40 * minute)]),
+    ClaudeSnapshot(available: true, attention: 0, waiting: 0, finished: 0, busy: 0),
+    "sesja skończona poza oknem"
+)
+assertEqual(
+    classify([probe(status: "idle", startedAgo: 5_000, statusAgo: 3_000)]),
+    ClaudeSnapshot(available: true, attention: 0, waiting: 0, finished: 0, busy: 0),
+    "świeżo otwarta sesja, która nigdy nie pracowała"
+)
+assertEqual(
+    classify([probe(status: "busy"), probe(pid: 101, status: "shell")]),
+    ClaudeSnapshot(available: true, attention: 0, waiting: 0, finished: 0, busy: 2),
+    "busy i shell liczą się jako praca"
+)
+assertEqual(
+    classify([probe(status: "busy", statusAgo: 30 * minute, updatedAgo: 10 * minute)]),
+    ClaudeSnapshot(available: true, attention: 0, waiting: 0, finished: 0, busy: 0),
+    "zawieszony busy (updatedAt nowszy niż statusUpdatedAt) jest pomijany"
+)
+assertEqual(
+    classify([probe(status: "waiting")], alive: false),
+    ClaudeSnapshot(available: true, attention: 0, waiting: 0, finished: 0, busy: 0),
+    "martwy proces jest pomijany"
+)
+assertEqual(
+    classify([probe(kind: "background", status: "waiting")]),
+    ClaudeSnapshot(available: true, attention: 0, waiting: 0, finished: 0, busy: 0),
+    "sesje inne niż interactive są pomijane"
+)
+assertEqual(
+    classify([probe(status: "waiting"), probe(pid: 101, status: "idle", statusAgo: 2 * minute), probe(pid: 102, status: "busy")]),
+    ClaudeSnapshot(available: true, attention: 2, waiting: 1, finished: 1, busy: 1),
+    "mieszanka stanów sumuje się poprawnie"
+)
+
 finishTests()
