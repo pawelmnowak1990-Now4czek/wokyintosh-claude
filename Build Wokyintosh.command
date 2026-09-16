@@ -80,6 +80,7 @@ cp "$SRC/Resources/AppIcon.icns" "$RESOURCES/AppIcon.icns"
 cp "$SRC/Resources/index.html" "$RESOURCES/Resources/index.html"
 cp "$SRC/Resources/style.css" "$RESOURCES/Resources/style.css"
 cp "$SRC/Resources/app.js" "$RESOURCES/Resources/app.js"
+cp "$SRC/Resources/video-art.svg" "$RESOURCES/Resources/video-art.svg"
 
 # Pomocnik Now Playing: biblioteka ładowana przez systemowego perla, bo MediaRemote
 # od macOS 15.4 odpowiada tylko procesom Apple.

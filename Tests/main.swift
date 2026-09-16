@@ -301,7 +301,9 @@ assertClose(NowPlayingSelection.position(of: mrPlayer(diaBundle, rate: 1, timest
 
 assertEqual(NowPlayingSelection.artworkURL(for: mrPlayer(diaBundle, artworkId: "7ec2"), hasArtwork: true, musicLookup: { "https://itunes" }), "wokyintosh-art://artwork/7ec2", "okładka: z magazynu")
 assertEqual(NowPlayingSelection.artworkURL(for: mrPlayer(musicBundle, artworkId: "a1"), hasArtwork: false, musicLookup: { "https://itunes" }), "https://itunes", "okładka: Music bez bajtów idzie do iTunes")
-assertEqual(NowPlayingSelection.artworkURL(for: mrPlayer(diaBundle, artworkId: "7ec2"), hasArtwork: false, musicLookup: { "https://itunes" }), "", "okładka: inne źródło bez bajtów")
+assertEqual(NowPlayingSelection.artworkURL(for: mrPlayer("com.example.player", artworkId: "7ec2"), hasArtwork: false, musicLookup: { "https://itunes" }), "", "okładka: inne źródło bez bajtów")
+assertEqual(NowPlayingSelection.artworkURL(for: mrPlayer(diaBundle, artworkId: "7ec2"), hasArtwork: false, musicLookup: { "https://itunes" }), "video-art.svg", "okładka: Dia bez bajtów pokazuje przycisk play")
+assertEqual(NowPlayingSelection.artworkURL(for: mrPlayer("com.apple.Safari"), hasArtwork: false, musicLookup: { "https://itunes" }), "video-art.svg", "okładka: Safari bez bajtów pokazuje przycisk play")
 assertEqual(ArtworkURL.artworkId(from: URL(string: ArtworkURL.make(artworkId: "a/b c"))!), "a/b c", "okładka: identyfikator ze znakami specjalnymi przechodzi przez adres")
 assertEqual(ArtworkURL.artworkId(from: URL(string: "wokyintosh-art://artwork/7ec2014f5eb8fe62")!), "7ec2014f5eb8fe62", "okładka: zwykły identyfikator")
 assertEqual(ArtworkURL.artworkId(from: URL(string: "https://example.com/artwork/x")!), nil, "okładka: obcy schemat")

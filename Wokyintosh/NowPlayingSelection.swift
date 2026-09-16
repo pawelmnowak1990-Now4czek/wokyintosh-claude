@@ -24,6 +24,15 @@ enum ArtworkURL {
 enum NowPlayingSelection {
     static let musicBundle = "com.apple.Music"
     private static let appleScriptBundles: Set<String> = ["com.spotify.client", musicBundle]
+    /// Przeglądarki: MediaRemote nie podaje z nich okładek (spike, sekcja 12 specu), a kafelek
+    /// nie wie, czy gra YouTube, więc pokazuje ogólny przycisk play zamiast logo.
+    static let browserBundles: Set<String> = [
+        "company.thebrowser.dia",
+        "company.thebrowser.Browser",
+        "com.google.Chrome",
+        "com.apple.Safari",
+    ]
+    static let videoArtURL = "video-art.svg"
 
     static func choose(players: [MRPlayer], previousBundle: String?) -> MRPlayer? {
         let candidates = players.filter { !$0.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
@@ -56,6 +65,9 @@ enum NowPlayingSelection {
         }
         if player.bundle == musicBundle {
             return musicLookup()
+        }
+        if browserBundles.contains(player.bundle) {
+            return videoArtURL
         }
         return ""
     }
