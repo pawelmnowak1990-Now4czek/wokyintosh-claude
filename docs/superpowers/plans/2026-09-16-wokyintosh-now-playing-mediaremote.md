@@ -2149,7 +2149,21 @@ Expected: `BRAK_POMOCNIKA` po ubiciu aplikacji (pomocnik sam wychodzi po zamkni�
 
 Punkt 6 sekcji 14 (pkill i powrót) został sprawdzony w zadaniu 7, krok 10; powtórz go, jeśli od tamtej pory zmieniał się kod pomocnika albo nadzoru.
 
-- [ ] **Step 5: Sprawdzenia na ekranie, które potwierdza Paweł**
+- [ ] **Step 5: Zapas AppleScript w zainstalowanej aplikacji**
+
+To jedyne sprawdzenie, że przy trwałej awarii pomocnika kafelek działa tak jak dziś. Poproś Pawła o włączenie utworu w Music, potem zablokuj bibliotekę pomocnika i uruchom aplikację ponownie:
+
+Run: `chmod 000 /Applications/Wokyintosh.app/Contents/Resources/Helper/NowPlayingHelper.dylib; pkill -x Wokyintosh; sleep 2; open -a /Applications/Wokyintosh.app; sleep 10; pgrep -fl 'Helper/nowplaying-helper.pl' || echo BRAK_POMOCNIKA; /usr/bin/log show --last 1m --style compact --predicate 'process == "Wokyintosh" AND eventMessage CONTAINS "pomocnik"' | tail -4`
+Expected: `BRAK_POMOCNIKA` oraz trzy wpisy `zakończył się (kod 2)`, ostatni z `zostaje AppleScript`.
+
+Poproś Pawła o potwierdzenie na ekranie doku, że kafelek pokazuje utwór z Music, pasek się przesuwa, a play/pauza działa.
+
+Przywróć pomocnika:
+
+Run: `chmod 755 /Applications/Wokyintosh.app/Contents/Resources/Helper/NowPlayingHelper.dylib; codesign --verify --deep --strict /Applications/Wokyintosh.app && echo PODPIS_OK; pkill -x Wokyintosh; sleep 2; open -a /Applications/Wokyintosh.app; sleep 5; pgrep -fl 'Helper/nowplaying-helper.pl'`
+Expected: `PODPIS_OK` i jeden proces pomocnika.
+
+- [ ] **Step 6: Sprawdzenia na ekranie, które potwierdza Paweł**
 
 Poproś Pawła o sprawdzenie na ekranie doku i odpowiedź na każdy punkt:
 1. YouTube w Dii: tytuł, kanał, źródło „Dia", pasek przesuwa się z filmem.
@@ -2158,6 +2172,6 @@ Poproś Pawła o sprawdzenie na ekranie doku i odpowiedź na każdy punkt:
 4. Przyciski działają dla Music (wszystkie trzy) i dla YouTube (play/pauza; następny zgodnie z wynikiem zadania 1).
 5. Okładka filmu widoczna (zgodnie z wynikiem zadania 1 i zadania 8).
 
-- [ ] **Step 6: Raport i decyzja o wypchnięciu**
+- [ ] **Step 7: Raport i decyzja o wypchnięciu**
 
-Zacznij od wyniku, potem: liczba testów, wynik smoke testu, pomiar pamięci (szczyt i wzrost), odpowiedzi Pawła z kroku 5, wszystko, co nie zadziałało albo zostało pominięte. Na końcu zapytaj: „Wypchnąć `feature/now-playing-mediaremote` na GitHuba?". Bez zgody nie wykonuj `git push`.
+Zacznij od wyniku, potem: liczba testów, wynik smoke testu, pomiar pamięci (szczyt i wzrost), wynik zapasu AppleScript z kroku 5, odpowiedzi Pawła z kroków 5 i 6, wszystko, co nie zadziałało albo zostało pominięte. Na końcu zapytaj: „Wypchnąć `feature/now-playing-mediaremote` na GitHuba?". Bez zgody nie wykonuj `git push`.
