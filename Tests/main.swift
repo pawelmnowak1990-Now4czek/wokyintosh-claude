@@ -150,4 +150,52 @@ assertEqual(
     "mieszanka stanów sumuje się poprawnie"
 )
 
+// Odczyt katalogu: pliki zapisujemy do katalogu tymczasowego, nigdy do ~/.claude.
+let fm = FileManager.default
+let sandbox = fm.temporaryDirectory.appendingPathComponent("wokyintosh-tests-\(UUID().uuidString)")
+try! fm.createDirectory(at: sandbox, withIntermediateDirectories: true)
+
+func writeProbe(_ name: String, _ json: String) {
+    try! json.write(to: sandbox.appendingPathComponent(name), atomically: true, encoding: .utf8)
+}
+
+writeProbe("100.json", """
+{"pid":100,"kind":"interactive","status":"waiting","startedAt":\(now - 60 * minute),"updatedAt":\(now),"statusUpdatedAt":\(now)}
+""")
+writeProbe("101.json", "{ to nie jest json")
+writeProbe("102.key", "klucz, nie json")
+
+let monitor = ClaudeMonitor(directory: sandbox, windowSeconds: 15 * 60, isAlive: { _ in true })
+assertEqual(
+    monitor.snapshot(nowMilliseconds: now),
+    ClaudeSnapshot(available: true, attention: 1, waiting: 1, finished: 0, busy: 0),
+    "odczyt katalogu: uszkodzony plik i plik .key są pomijane"
+)
+
+let missing = ClaudeMonitor(
+    directory: sandbox.appendingPathComponent("nie-ma-takiego"),
+    windowSeconds: 15 * 60,
+    isAlive: { _ in true }
+)
+assertEqual(missing.snapshot(nowMilliseconds: now), ClaudeSnapshot.unavailable, "brak katalogu daje available=false")
+
+let emptyDir = sandbox.appendingPathComponent("pusty")
+try! fm.createDirectory(at: emptyDir, withIntermediateDirectories: true)
+assertEqual(
+    ClaudeMonitor(directory: emptyDir, windowSeconds: 15 * 60, isAlive: { _ in true }).snapshot(nowMilliseconds: now),
+    ClaudeSnapshot(available: true, attention: 0, waiting: 0, finished: 0, busy: 0),
+    "pusty katalog to zero sesji, nie brak danych"
+)
+
+let brokenOnly = sandbox.appendingPathComponent("uszkodzone")
+try! fm.createDirectory(at: brokenOnly, withIntermediateDirectories: true)
+try! "{ nie json".write(to: brokenOnly.appendingPathComponent("200.json"), atomically: true, encoding: .utf8)
+assertEqual(
+    ClaudeMonitor(directory: brokenOnly, windowSeconds: 15 * 60, isAlive: { _ in true }).snapshot(nowMilliseconds: now),
+    ClaudeSnapshot.unavailable,
+    "same uszkodzone pliki dają available=false"
+)
+
+try? fm.removeItem(at: sandbox)
+
 finishTests()

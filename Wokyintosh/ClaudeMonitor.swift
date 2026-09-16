@@ -74,3 +74,62 @@ enum ClaudeLogic {
         )
     }
 }
+
+/// Czyta pliki stanu sesji Claude Code. Tylko odczyt, nic nie zapisuje.
+final class ClaudeMonitor {
+    private let directory: URL
+    private let windowSeconds: Double
+    private let isAlive: (Int32) -> Bool
+    private let decoder = JSONDecoder()
+
+    init(
+        directory: URL = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent(".claude", isDirectory: true)
+            .appendingPathComponent("sessions", isDirectory: true),
+        windowSeconds: Double = ClaudeMonitor.configuredWindowSeconds(),
+        isAlive: @escaping (Int32) -> Bool = ClaudeMonitor.processIsAlive
+    ) {
+        self.directory = directory
+        self.windowSeconds = windowSeconds
+        self.isAlive = isAlive
+    }
+
+    /// Okno "skończyła niedawno". Zmiana bez rekompilacji:
+    /// defaults write com.pawelnowak.wokyintosh ClaudeFinishedWindowMinutes 20
+    static func configuredWindowSeconds() -> Double {
+        let stored = UserDefaults.standard.object(forKey: "ClaudeFinishedWindowMinutes") as? NSNumber
+        let minutes = stored?.doubleValue ?? 15
+        return max(1, minutes) * 60
+    }
+
+    static func processIsAlive(_ pid: Int32) -> Bool {
+        if kill(pid, 0) == 0 { return true }
+        return errno == EPERM
+    }
+
+    func snapshot(nowMilliseconds now: Double = Date().timeIntervalSince1970 * 1000) -> ClaudeSnapshot {
+        guard let names = try? FileManager.default.contentsOfDirectory(atPath: directory.path) else {
+            return .unavailable
+        }
+
+        let jsonNames = names.filter { $0.hasSuffix(".json") }
+        var probes: [ClaudeProbe] = []
+
+        for name in jsonNames {
+            guard
+                let data = try? Data(contentsOf: directory.appendingPathComponent(name)),
+                let probe = try? decoder.decode(ClaudeProbe.self, from: data)
+            else { continue }
+            probes.append(probe)
+        }
+
+        if probes.isEmpty && !jsonNames.isEmpty { return .unavailable }
+
+        return ClaudeLogic.classify(
+            probes: probes,
+            nowMilliseconds: now,
+            windowSeconds: windowSeconds,
+            isAlive: isAlive
+        )
+    }
+}
