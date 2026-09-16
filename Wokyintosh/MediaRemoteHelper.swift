@@ -106,6 +106,12 @@ final class MediaRemoteHelper {
     private var artworks: [String: MRArtwork] = [:]
     private var pendingAcks: [PendingAck] = []
     private var watchdog: DispatchSourceTimer?
+    // Koniec procesu liczymy dopiero, gdy mamy i kod wyjścia, i zamknięte wyjście
+    // (albo minęła 1 s bez EOF) — inaczej spóźniona linia z umierającego procesu
+    // mogłaby wrócić po `clearState()` i zostawić fantomowy stan.
+    private var pendingExitCode: Int32?
+    private var outputClosed = false
+    private var exitHandled = false
 
     init(launch: Launch?, timing: Timing = Timing()) {
         self.launch = launch
@@ -212,14 +218,18 @@ final class MediaRemoteHelper {
         }
         process.terminationHandler = { [weak self] finished in
             let code = finished.terminationReason == .exit ? finished.terminationStatus : -1
-            self?.queue.async { self?.handleExit(code: code, generation: current) }
+            self?.queue.async { self?.recordExit(code: code, generation: current) }
         }
 
-        buffer = Data()
+        // Defensywnie: żaden stan po poprzednim procesie nie ma prawa przetrwać do nowego.
+        clearState()
         sawHello = false
         sawState = false
         startedAt = Date()
         lastLineAt = startedAt
+        pendingExitCode = nil
+        outputClosed = false
+        exitHandled = false
 
         do {
             try process.run()
@@ -235,7 +245,13 @@ final class MediaRemoteHelper {
     }
 
     private func receive(_ chunk: Data, generation current: Int) {
-        guard current == generation, !chunk.isEmpty else { return }
+        guard current == generation else { return }
+        guard !chunk.isEmpty else {
+            // Puste dane to EOF potoku: koniec wyjścia dla tej generacji.
+            outputClosed = true
+            finishExitIfReady(generation: current)
+            return
+        }
         buffer.append(chunk)
         while let newline = buffer.firstIndex(of: 0x0A) {
             let line = buffer.subdata(in: buffer.startIndex..<newline)
@@ -302,8 +318,30 @@ final class MediaRemoteHelper {
         }
     }
 
-    private func handleExit(code: Int32, generation current: Int) {
+    /// Zapamiętuje kod wyjścia; samo zakończenie odpala dopiero `finishExitIfReady`,
+    /// gdy doszło też EOF potoku (albo po 1 s, gdyby wnuk procesu trzymał go otwarty).
+    private func recordExit(code: Int32, generation current: Int) {
         guard current == generation else { return }
+        pendingExitCode = code
+        if outputClosed {
+            finishExit(generation: current)
+        } else {
+            queue.asyncAfter(deadline: .now() + 1) { [weak self] in
+                self?.finishExit(generation: current)
+            }
+        }
+    }
+
+    private func finishExitIfReady(generation current: Int) {
+        guard current == generation, pendingExitCode != nil else { return }
+        finishExit(generation: current)
+    }
+
+    private func finishExit(generation current: Int) {
+        guard current == generation, !exitHandled, let code = pendingExitCode else { return }
+        exitHandled = true
+        // Podbijamy generację od razu: spóźnione zdarzenia z martwego procesu mają być ignorowane.
+        generation += 1
         watchdog?.cancel()
         watchdog = nil
         process = nil

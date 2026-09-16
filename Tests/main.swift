@@ -431,14 +431,22 @@ assertEqual(waitUntil(6) { crashingHelper.isPermanentlyDisabled }, true, "nadzó
 
 let restartCounter = helperSandbox.appendingPathComponent("restarts.txt")
 let restartingHelper = fakeHelper("fake-restart.zsh", #"""
-print -r -- start >> "$1"
-print -r -- '{"type":"hello","version":1}'
-print -r -- '{"type":"state","players":[]}'
-sleep 0.3
-exit 0
+if [[ -s "$1" ]]; then
+  print -r -- start >> "$1"
+  print -r -- '{"type":"hello","version":1}'
+  exec sleep 30
+else
+  print -r -- start >> "$1"
+  print -r -- '{"type":"hello","version":1}'
+  print -r -- '{"type":"artwork","bundle":"company.thebrowser.dia","artworkId":"a1","mime":"image/jpeg","data":"AQID"}'
+  print -r -- '{"type":"state","players":[{"bundle":"company.thebrowser.dia","name":"Dia","title":"Film","rate":0,"timestamp":1000,"artworkId":"a1"}]}'
+  exit 0
+fi
 """#, arguments: [restartCounter.path])
 restartingHelper.start()
 assertEqual(waitUntil(4) { launchCount(restartCounter) >= 2 }, true, "nadzór: restart po zakończeniu")
+assertEqual(waitUntil(2) { restartingHelper.freshPlayers() == nil }, true, "nadzór: po zakończeniu procesu brak stanu")
+assertEqual(restartingHelper.artwork(id: "a1"), nil, "nadzór: po zakończeniu procesu brak okładki")
 restartingHelper.stop()
 
 let silentCounter = helperSandbox.appendingPathComponent("silent.txt")
