@@ -1,7 +1,7 @@
 import AppKit
 import Foundation
 
-struct NowPlayingData: Codable {
+struct NowPlayingData: Codable, Equatable {
     let playing: Bool
     let app: String
     let track: String

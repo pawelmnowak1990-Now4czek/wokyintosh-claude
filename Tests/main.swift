@@ -274,4 +274,47 @@ assertEqual(MediaRemoteProtocol.command(for: .previous), MRCommand.previousTrack
 assertEqual(MediaRemoteProtocol.command(for: .playPause), MRCommand.togglePlayPause, "protokół: play/pauza")
 assertEqual(MediaRemoteProtocol.command(for: .next), MRCommand.nextTrack, "protokół: następny")
 
+// Wybór odtwarzacza, pozycja i okładka (sekcje 6 i 7 specu).
+let diaBundle = "company.thebrowser.dia"
+let musicBundle = "com.apple.Music"
+
+func mrPlayer(_ bundle: String, title: String = "Tytuł", rate: Double = 0, timestamp: Double = 100,
+              elapsed: Double = 10, duration: Double = 200, artworkId: String = "", name: String = "App") -> MRPlayer {
+    MRPlayer(bundle: bundle, name: name, title: title, artist: "Artysta", album: "", duration: duration,
+             elapsed: elapsed, rate: rate, timestamp: timestamp, artworkId: artworkId)
+}
+
+assertEqual(NowPlayingSelection.choose(players: [mrPlayer(musicBundle, timestamp: 500), mrPlayer(diaBundle, rate: 1, timestamp: 100)], previousBundle: nil)?.bundle, diaBundle, "wybór: grający wygrywa ze świeższą pauzą")
+assertEqual(NowPlayingSelection.choose(players: [mrPlayer(musicBundle, rate: 1, timestamp: 100), mrPlayer(diaBundle, rate: 1, timestamp: 200)], previousBundle: musicBundle)?.bundle, diaBundle, "wybór: z dwóch grających świeższy")
+assertEqual(NowPlayingSelection.choose(players: [mrPlayer(musicBundle, timestamp: 300), mrPlayer(diaBundle, timestamp: 200)], previousBundle: nil)?.bundle, musicBundle, "wybór: sama pauza, ostatnio aktywny")
+assertEqual(NowPlayingSelection.choose(players: [mrPlayer(musicBundle, rate: 1, timestamp: 100), mrPlayer(diaBundle, rate: 1, timestamp: 100)], previousBundle: diaBundle)?.bundle, diaBundle, "wybór: remis zostaje przy poprzednim")
+assertEqual(NowPlayingSelection.choose(players: [mrPlayer(musicBundle, rate: 1, timestamp: 100), mrPlayer(diaBundle, rate: 1, timestamp: 100)], previousBundle: nil)?.bundle, musicBundle, "wybór: remis bez poprzedniego bierze pierwszy")
+assertEqual(NowPlayingSelection.choose(players: [mrPlayer(diaBundle, title: "   ", rate: 1)], previousBundle: nil), nil, "wybór: odtwarzacz bez tytułu pominięty")
+assertEqual(NowPlayingSelection.choose(players: [], previousBundle: nil), nil, "wybór: pusta lista")
+
+assertClose(NowPlayingSelection.position(of: mrPlayer(diaBundle, rate: 1, timestamp: 1000, elapsed: 50), now: 1012), 62, "pozycja: gra i dolicza czas")
+assertClose(NowPlayingSelection.position(of: mrPlayer(diaBundle, rate: 0, timestamp: 1000, elapsed: 50), now: 1012), 50, "pozycja: pauza stoi")
+assertClose(NowPlayingSelection.position(of: mrPlayer(diaBundle, rate: 2, timestamp: 1000, elapsed: 190, duration: 200), now: 1012), 200, "pozycja: obcięta do długości")
+assertClose(NowPlayingSelection.position(of: mrPlayer(diaBundle, rate: 1, timestamp: 1000, elapsed: 50), now: 990), 50, "pozycja: zegar przed timestamp")
+assertClose(NowPlayingSelection.position(of: mrPlayer(diaBundle, rate: 1, timestamp: 1000, elapsed: 50, duration: 0), now: 1100), 150, "pozycja: zerowa długość bez obcinania")
+assertClose(NowPlayingSelection.position(of: mrPlayer(diaBundle, rate: 1, timestamp: 0, elapsed: 50), now: 1_789_553_794), 50, "pozycja: brak timestamp nie dolicza")
+
+assertEqual(NowPlayingSelection.artworkURL(for: mrPlayer(diaBundle, artworkId: "7ec2"), hasArtwork: true, musicLookup: { "https://itunes" }), "wokyintosh-art://artwork/7ec2", "okładka: z magazynu")
+assertEqual(NowPlayingSelection.artworkURL(for: mrPlayer(musicBundle, artworkId: "a1"), hasArtwork: false, musicLookup: { "https://itunes" }), "https://itunes", "okładka: Music bez bajtów idzie do iTunes")
+assertEqual(NowPlayingSelection.artworkURL(for: mrPlayer(diaBundle, artworkId: "7ec2"), hasArtwork: false, musicLookup: { "https://itunes" }), "", "okładka: inne źródło bez bajtów")
+assertEqual(ArtworkURL.artworkId(from: URL(string: ArtworkURL.make(artworkId: "a/b c"))!), "a/b c", "okładka: identyfikator ze znakami specjalnymi przechodzi przez adres")
+assertEqual(ArtworkURL.artworkId(from: URL(string: "wokyintosh-art://artwork/7ec2014f5eb8fe62")!), "7ec2014f5eb8fe62", "okładka: zwykły identyfikator")
+assertEqual(ArtworkURL.artworkId(from: URL(string: "https://example.com/artwork/x")!), nil, "okładka: obcy schemat")
+
+assertEqual(
+    NowPlayingSelection.nowPlayingData(for: mrPlayer(diaBundle, title: "Film", rate: 1, timestamp: 1000, elapsed: 50, duration: 4083, name: "Dia"), now: 1010, artworkURL: ""),
+    NowPlayingData(playing: true, app: "Dia", track: "Film", artist: "Artysta", duration: 4083, position: 60, state: "playing", artworkURL: ""),
+    "mapowanie: grający film z Dii"
+)
+assertEqual(NowPlayingSelection.nowPlayingData(for: mrPlayer(musicBundle, name: ""), now: 1010, artworkURL: "x").app, musicBundle, "mapowanie: pusta nazwa daje bundle")
+assertEqual(NowPlayingSelection.nowPlayingData(for: mrPlayer(musicBundle), now: 1010, artworkURL: "x").state, "paused", "mapowanie: rate 0 to pauza")
+assertEqual(NowPlayingSelection.shouldFallBackToAppleScript(bundle: musicBundle), true, "zapas: Music")
+assertEqual(NowPlayingSelection.shouldFallBackToAppleScript(bundle: "com.spotify.client"), true, "zapas: Spotify")
+assertEqual(NowPlayingSelection.shouldFallBackToAppleScript(bundle: diaBundle), false, "zapas: Dia bez AppleScript")
+
 finishTests()
