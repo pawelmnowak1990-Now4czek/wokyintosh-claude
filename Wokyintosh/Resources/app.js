@@ -62,6 +62,20 @@ window.WokyintoshNative={
     meter('cpu-bar',d.cpu);meter('ram-bar',d.ram);meter('ssd-bar',d.disk_used_pct);
     const m=String(d.net_rate||'').match(/([\d.]+)/);let n=m?Number(m[1]):0;if(String(d.net_rate).includes('MB'))n*=18;meter('net-bar',Math.min(100,n));
   },
+  updateClaude(d){
+    const star=$('claude-star'),count=$('claude-count'),cap=$('claude-caption');
+    if(!d||d.available===false){
+      count.textContent='?';count.classList.remove('waiting');
+      star.classList.remove('working');cap.textContent='no data';return;
+    }
+    const w=Number(d.waiting||0),f=Number(d.finished||0),b=Number(d.busy||0);
+    const a=Number(d.attention||0)||w+f;
+    count.textContent=String(a);
+    count.classList.toggle('waiting',w>0);
+    star.classList.toggle('working',b>0);
+    if(a>0){cap.textContent=w>0?`${w} waiting · ${f} done`:`${f} done`}
+    else{cap.textContent=b>0?`${b} working`:'all quiet'}
+  },
   updateNowPlaying(d){
     if(!d.playing){
       $('track').textContent='Nothing playing';$('artist').textContent='Music / Spotify';$('source').textContent='—';$('elapsed').textContent='00:00 / 00:00';$('progress-bar').style.width='0%';$('play-state').textContent='▶';setArtwork('');return;
