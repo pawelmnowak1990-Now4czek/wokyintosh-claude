@@ -1141,7 +1141,7 @@ git commit -m "feat: pomocnik MediaRemote ładowany przez systemowy perl"
   - `var isPermanentlyDisabled: Bool`,
   - w `Tests/main.swift` (dla zadania 7): `helperSandbox: URL`, `fakeHelper(_:_:arguments:) -> MediaRemoteHelper`, `waitUntil(_:_:) -> Bool`, `fakeWorkingScript: String`.
 
-Testy tego zadania uruchamiają krótkie skrypty zsh udające pomocnika i wydłużają `Run Tests.command` o około 12 s.
+Po przeglądzie (runda poprawek 1): zakończenie procesu jest obsługiwane dopiero po końcu jego wyjścia (albo po 1 s), a test restartu sprawdza brak stanu i okładki po wyjściu — kod w repo jest źródłem prawdy dla tych fragmentów. Testy tego zadania uruchamiają krótkie skrypty zsh udające pomocnika i wydłużają `Run Tests.command` o około 12 s.
 
 - [ ] **Step 1: Napisz testy**
 
@@ -1556,7 +1556,7 @@ final class MediaRemoteHelper {
 - [ ] **Step 4: Uruchom testy**
 
 Run: `./"Run Tests.command"`
-Expected: `OK: 102 sprawdzeń`. Po zakończeniu `pgrep -f fake-` nie zwraca żadnego procesu.
+Expected: `OK: 104 sprawdzeń`. Po zakończeniu `pgrep -f fake-` nie zwraca żadnego procesu.
 
 - [ ] **Step 5: Commit**
 
@@ -1720,7 +1720,7 @@ Reszta dawnego ciała (`let spotify = spotifySnapshot()` … `return .empty`) zo
 - [ ] **Step 4: Uruchom testy**
 
 Run: `./"Run Tests.command"`
-Expected: `OK: 104 sprawdzeń`.
+Expected: `OK: 106 sprawdzeń`.
 
 - [ ] **Step 5: Zmień `NativeBridge`**
 
@@ -2069,7 +2069,7 @@ na:
 - [ ] **Step 5: Zbuduj i sprawdź okładkę**
 
 Run: `./"Run Tests.command" | tail -1 && ./"Build Wokyintosh.command" 2>&1 | tail -3`
-Expected: `OK: 104 sprawdzeń`, `Wokyintosh launched.`
+Expected: `OK: 106 sprawdzeń`, `Wokyintosh launched.`
 
 Jeśli zadanie 1 pokazało bajty okładki dla Dii, poproś Pawła o przełączenie na inny film na YouTube, potem:
 
@@ -2120,7 +2120,7 @@ Asercja „okładka: z magazynu" (Dia z bajtami → `wokyintosh-art://…`) zost
 - [ ] **Step 2: Uruchom testy i sprawdź, że nie przechodzą**
 
 Run: `./"Run Tests.command"`
-Expected: linie `FAIL okładka: Dia bez bajtów pokazuje przycisk play` i `FAIL okładka: Safari bez bajtów pokazuje przycisk play` (otrzymano pusty tekst, oczekiwano `video-art.svg`), na końcu `2 z 106 sprawdzeń nie przeszło`.
+Expected: linie `FAIL okładka: Dia bez bajtów pokazuje przycisk play` i `FAIL okładka: Safari bez bajtów pokazuje przycisk play` (otrzymano pusty tekst, oczekiwano `video-art.svg`), na końcu `2 z 108 sprawdzeń nie przeszło`.
 
 - [ ] **Step 3: Napisz implementację**
 
@@ -2171,7 +2171,7 @@ na:
 - [ ] **Step 4: Uruchom testy**
 
 Run: `./"Run Tests.command"`
-Expected: `OK: 106 sprawdzeń`.
+Expected: `OK: 108 sprawdzeń`.
 
 - [ ] **Step 5: Dodaj grafikę**
 
@@ -2223,7 +2223,7 @@ git commit -m "feat: przycisk play zamiast okładki dla przeglądarek"
 - [ ] **Step 1: Pełne testy i smoke test**
 
 Run: `./"Run Tests.command" | tail -1 && ./Tests/helper-smoke.command`
-Expected: `OK: 106 sprawdzeń`, potem dwie linie `OK:` ze smoke testu.
+Expected: `OK: 108 sprawdzeń`, potem dwie linie `OK:` ze smoke testu.
 
 - [ ] **Step 2: Uruchom 60-minutowy pomiar pamięci w tle**
 
