@@ -2,8 +2,14 @@
 // Od macOS 15.4 MediaRemote odpowiada tylko procesom Apple, dlatego ta biblioteka
 // jest ładowana do /usr/bin/perl (nowplaying-helper.pl). Protokół: sekcja 5 specu
 // docs/superpowers/specs/2026-09-16-wokyintosh-now-playing-mediaremote-design.md.
+// Pętla NIE działa w konstruktorze biblioteki — ładowanie trzyma blokadę dyld przez
+// cały czas trwania dl_load_file, więc każdy leniwy dlopen (miękkie linkowanie we
+// frameworkach Apple) zawiesiłby się na zawsze. Zamiast tego perl woła wyeksportowaną
+// NowPlayingHelperRun przez sztuczkę z XSUB-em (dl_find_symbol + dl_install_xsub),
+// już po zakończeniu ładowania biblioteki.
 #import <Foundation/Foundation.h>
 #include <dlfcn.h>
+#include <math.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,21 +30,62 @@ static const uint32_t kCommandTogglePlayPause = 2;
 static const uint32_t kCommandNextTrack = 4;
 static const uint32_t kCommandPreviousTrack = 5;
 static const NSUInteger kMaxArtworkBytes = 2 * 1024 * 1024;
-static const int64_t kCallTimeout = 3 * NSEC_PER_SEC;
+// Budżet czasu na jeden poll: wszystkie zapytania o info (i osobno zapytanie o okładkę)
+// muszą zmieścić się w tym oknie, inaczej pomocnik korzysta z cache/poprzedniej listy.
+static const int64_t kInfoDeadlineNanos = (int64_t)(0.8 * (double)NSEC_PER_SEC);
+// Najstarszy wpis w cache info, który jeszcze trafia do linii state.
+static const NSTimeInterval kInfoCacheMaxAge = 10.0;
+
+// Wpis cache info dla jednego bundle: ostatnia udana odpowiedź MediaRemote + czas jej
+// przyjęcia. Odświeżany także wtedy, gdy odpowiedź przychodzi już po budżecie pollu —
+// wtedy po prostu obsłuży kolejny poll.
+@interface InfoCacheEntry : NSObject
+@property(nonatomic, strong) NSDictionary *info;
+@property(nonatomic, assign) NSTimeInterval receivedAt;
+@end
+@implementation InfoCacheEntry
+@end
 
 static dispatch_queue_t mrQueue;
 static NSLock *outputLock;
 static NSLock *clientsLock;
 static NSDictionary<NSString *, id> *latestClients;
+static NSArray *lastKnownClientsList;
 static NSMutableDictionary<NSString *, NSString *> *sentArtworkIds;
+static NSLock *cacheLock;
+static NSMutableDictionary<NSString *, InfoCacheEntry *> *infoCache;
+static NSMutableSet<NSString *> *pendingInfoBundles;
 
 static NSString *InfoKey(NSString *name) {
     return [@"kMRMediaRemoteNowPlayingInfo" stringByAppendingString:name];
 }
 
+// Odtwarzacze to obce procesy — ich stringi mogą zawierać niesparowane surogaty i inne
+// nie-UTF8 śmieci, które wywalają NSJSONSerialization. Czyszczenie przez zgubny round-trip
+// przez UTF-8 daje zawsze poprawny, serializowalny string (ewentualnie z utratą znaków).
+static NSString *SanitizeString(NSString *value) {
+    if (value.length == 0) return @"";
+    NSData *utf8 = [value dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:YES];
+    if (!utf8) return @"";
+    NSString *clean = [[NSString alloc] initWithData:utf8 encoding:NSUTF8StringEncoding];
+    return clean ?: @"";
+}
+
 static void WriteLine(NSDictionary *object) {
-    NSData *json = [NSJSONSerialization dataWithJSONObject:object options:0 error:nil];
-    if (!json) return;
+    NSData *json = nil;
+    @try {
+        NSError *error = nil;
+        json = [NSJSONSerialization dataWithJSONObject:object options:0 error:&error];
+        if (!json) {
+            fprintf(stderr, "nowplaying-helper: serializacja JSON nie powiodła się: %s\n",
+                    error ? error.localizedDescription.UTF8String : "nieznany błąd");
+            return;
+        }
+    } @catch (NSException *exception) {
+        fprintf(stderr, "nowplaying-helper: wyjątek przy serializacji JSON: %s\n",
+                exception.reason.UTF8String ?: "nieznany");
+        return;
+    }
     [outputLock lock];
     fwrite(json.bytes, 1, json.length, stdout);
     fputc('\n', stdout);
@@ -57,28 +104,42 @@ static void *RequireSymbol(void *handle, const char *name) {
 
 static NSString *StringValue(NSDictionary *info, NSString *name) {
     id value = info[InfoKey(name)];
-    return [value isKindOfClass:[NSString class]] ? value : @"";
+    return [value isKindOfClass:[NSString class]] ? SanitizeString(value) : @"";
 }
 
 static double NumberValue(NSDictionary *info, NSString *name) {
     id value = info[InfoKey(name)];
-    return [value isKindOfClass:[NSNumber class]] ? [value doubleValue] : 0;
+    if (![value isKindOfClass:[NSNumber class]]) return 0;
+    double number = [value doubleValue];
+    return isfinite(number) ? number : 0;
 }
 
 static double DateValue(NSDictionary *info, NSString *name) {
     id value = info[InfoKey(name)];
-    return [value isKindOfClass:[NSDate class]] ? [value timeIntervalSince1970] : 0;
+    if (![value isKindOfClass:[NSDate class]]) return 0;
+    double seconds = [value timeIntervalSince1970];
+    return isfinite(seconds) ? seconds : 0;
 }
 
 static NSArray *CopyClients(void) {
-    __block NSArray *result = @[];
+    __block NSArray *result = nil;
     dispatch_semaphore_t done = dispatch_semaphore_create(0);
     MRGetClients(mrQueue, ^(CFArrayRef clients) {
-        if (clients) result = [(__bridge NSArray *)clients copy];
+        NSArray *copied = clients ? [(__bridge NSArray *)clients copy] : @[];
+        [clientsLock lock];
+        lastKnownClientsList = copied;
+        [clientsLock unlock];
+        result = copied;
         dispatch_semaphore_signal(done);
     });
-    if (dispatch_semaphore_wait(done, dispatch_time(DISPATCH_TIME_NOW, kCallTimeout)) != 0) return @[];
-    return result;
+    if (dispatch_semaphore_wait(done, dispatch_time(DISPATCH_TIME_NOW, kInfoDeadlineNanos)) != 0) {
+        // Lista klientów nie zdążyła w budżecie — leć na ostatniej znanej liście.
+        [clientsLock lock];
+        NSArray *fallback = lastKnownClientsList ?: @[];
+        [clientsLock unlock];
+        return fallback;
+    }
+    return result ?: @[];
 }
 
 static NSDictionary *CopyInfo(id client, BOOL includeArtwork) {
@@ -88,8 +149,33 @@ static NSDictionary *CopyInfo(id client, BOOL includeArtwork) {
         if (info) result = [(__bridge NSDictionary *)info copy];
         dispatch_semaphore_signal(done);
     });
-    if (dispatch_semaphore_wait(done, dispatch_time(DISPATCH_TIME_NOW, kCallTimeout)) != 0) return nil;
+    if (dispatch_semaphore_wait(done, dispatch_time(DISPATCH_TIME_NOW, kInfoDeadlineNanos)) != 0) return nil;
     return result;
+}
+
+// Zamawia info dla jednego bundle, o ile poprzednie zamówienie dla niego już dostało
+// odpowiedź. Odpowiedź (nawet spóźniona względem budżetu pollu) zawsze trafia do cache —
+// obsłuży wtedy kolejny poll zamiast tego bieżącego.
+static void RequestInfoIfNeeded(NSString *bundle, id client, dispatch_group_t group) {
+    [cacheLock lock];
+    BOOL alreadyPending = [pendingInfoBundles containsObject:bundle];
+    if (!alreadyPending) [pendingInfoBundles addObject:bundle];
+    [cacheLock unlock];
+    if (alreadyPending) return;
+
+    dispatch_group_enter(group);
+    MRGetInfoForClient((__bridge CFTypeRef)client, MRGetLocalOrigin(), NO, mrQueue, ^(CFDictionaryRef info, void *unused) {
+        [cacheLock lock];
+        if (info) {
+            InfoCacheEntry *entry = [InfoCacheEntry new];
+            entry.info = [(__bridge NSDictionary *)info copy];
+            entry.receivedAt = CFAbsoluteTimeGetCurrent();
+            infoCache[bundle] = entry;
+        }
+        [pendingInfoBundles removeObject:bundle];
+        [cacheLock unlock];
+        dispatch_group_leave(group);
+    });
 }
 
 static void SendArtwork(id client, NSString *bundle, NSString *artworkId) {
@@ -107,18 +193,48 @@ static void SendArtwork(id client, NSString *bundle, NSString *artworkId) {
 }
 
 static void PollOnce(void) {
-    NSMutableArray *players = [NSMutableArray array];
+    NSArray *clients = CopyClients();
     NSMutableDictionary *clientsByBundle = [NSMutableDictionary dictionary];
-    for (id client in CopyClients()) {
-        NSString *bundle = (__bridge NSString *)MRClientBundle((__bridge CFTypeRef)client);
+    NSMutableSet<NSString *> *currentBundles = [NSMutableSet set];
+    dispatch_group_t group = dispatch_group_create();
+
+    // Wszystkie zapytania o info idą "na raz" — czekamy raz, wspólnie, zamiast po kolei
+    // dla każdego klienta. Jeden nieodpowiadający klient nie blokuje już reszty pollu.
+    for (id client in clients) {
+        NSString *bundle = SanitizeString((__bridge NSString *)MRClientBundle((__bridge CFTypeRef)client));
         if (bundle.length == 0) continue;
         clientsByBundle[bundle] = client;
+        [currentBundles addObject:bundle];
+        RequestInfoIfNeeded(bundle, client, group);
+    }
 
-        NSDictionary *info = CopyInfo(client, NO);
+    [clientsLock lock];
+    latestClients = clientsByBundle;
+    [clientsLock unlock];
+
+    dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, kInfoDeadlineNanos));
+    // Spóźnione odpowiedzi po tym czekaniu i tak zapiszą się do cache (RequestInfoIfNeeded)
+    // i posłużą następnemu pollowi.
+
+    NSTimeInterval now = CFAbsoluteTimeGetCurrent();
+    [cacheLock lock];
+    for (NSString *bundle in infoCache.allKeys) {
+        if (![currentBundles containsObject:bundle]) [infoCache removeObjectForKey:bundle];
+    }
+    NSDictionary<NSString *, InfoCacheEntry *> *cacheSnapshot = [infoCache copy];
+    [cacheLock unlock];
+
+    NSMutableArray *players = [NSMutableArray array];
+    for (NSString *bundle in currentBundles) {
+        id client = clientsByBundle[bundle];
+        InfoCacheEntry *entry = cacheSnapshot[bundle];
+        if (!entry || (now - entry.receivedAt) > kInfoCacheMaxAge) continue;
+        NSDictionary *info = entry.info;
+
         NSString *title = StringValue(info, @"Title");
         if ([title stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet].length == 0) continue;
 
-        NSString *name = (__bridge NSString *)MRClientDisplayName((__bridge CFTypeRef)client) ?: @"";
+        NSString *name = SanitizeString((__bridge NSString *)MRClientDisplayName((__bridge CFTypeRef)client) ?: @"");
         NSString *artworkId = StringValue(info, @"ArtworkIdentifier");
         // Okładka tylko przy nowym identyfikatorze i przed linią state, żeby aplikacja miała bajty,
         // zanim zobaczy identyfikator. Nieudana próba też jest zapamiętana, bez ponawiania co sekundę.
@@ -140,9 +256,6 @@ static void PollOnce(void) {
             @"artworkId": artworkId,
         }];
     }
-    [clientsLock lock];
-    latestClients = clientsByBundle;
-    [clientsLock unlock];
     WriteLine(@{@"type": @"state", @"players": players});
 }
 
@@ -195,13 +308,22 @@ static void *ReadCommands(void *unused) {
     return NULL;
 }
 
-__attribute__((constructor))
-static void RunHelper(void) {
+// Wyeksportowana funkcja, wołana przez perl dopiero po zakończeniu dl_load_file (patrz
+// nowplaying-helper.pl) — NIE konstruktor biblioteki. Argumenty odpowiadają konwencji
+// wywołania XSUB-a (pTHX_ CV*) i są ignorowane. Robi setup i wchodzi w pętlę pollingu,
+// która nigdy nie wraca; powrót z tej funkcji oznacza błąd i jest sygnałem dla perla.
+__attribute__((visibility("default")))
+void NowPlayingHelperRun(void *unusedA, void *unusedB) {
+    (void)unusedA;
+    (void)unusedB;
     @autoreleasepool {
         outputLock = [NSLock new];
         clientsLock = [NSLock new];
         latestClients = @{};
         sentArtworkIds = [NSMutableDictionary dictionary];
+        cacheLock = [NSLock new];
+        infoCache = [NSMutableDictionary dictionary];
+        pendingInfoBundles = [NSMutableSet set];
 
         void *mr = dlopen("/System/Library/PrivateFrameworks/MediaRemote.framework/MediaRemote", RTLD_NOW);
         MRGetClients = RequireSymbol(mr, "MRMediaRemoteGetNowPlayingClients");
