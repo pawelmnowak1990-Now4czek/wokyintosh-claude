@@ -115,7 +115,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate {
     /// tymczasowej kopii (App Translocation) i rejestracja nie ma sensu.
     private func registerLoginItemIfPossible() {
         guard Bundle.main.bundlePath.hasPrefix("/Applications/") else { return }
-        guard SMAppService.mainApp.status == .notRegistered else { return }
+
+        // Po wyrejestrowaniu status potrafi być .notFound zamiast .notRegistered,
+        // więc pytamy wprost o to, co nas interesuje: czy autostart jest włączony.
+        let status = SMAppService.mainApp.status
+        guard status != .enabled, status != .requiresApproval else { return }
+
         do {
             try SMAppService.mainApp.register()
         } catch {
