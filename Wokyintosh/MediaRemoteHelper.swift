@@ -84,7 +84,7 @@ final class MediaRemoteHelper {
         let id: UUID
         let cmd: String
         let bundle: String
-        let completion: (Bool) -> Void
+        let completion: (HelperCommandResult) -> Void
     }
 
     private let launch: Launch?
@@ -97,8 +97,11 @@ final class MediaRemoteHelper {
     private var process: Process?
     private var input: FileHandle?
     private var buffer = Data()
-    private var startedAt = Date.distantPast
-    private var lastLineAt = Date.distantPast
+    // Zegar systemowy (systemUptime), nie Date(): mach absolute time stoi w czasie snu,
+    // więc po wybudzeniu Date() naliczyłby cały sen jako ciszę i zabił zdrowego pomocnika.
+    // `lastStateAt` (świeżość stanu dla `freshPlayers`) zostaje na Date(), bo to porównanie z zegarem ściennym.
+    private var startedAt: TimeInterval = 0
+    private var lastLineAt: TimeInterval = 0
     private var sawHello = false
     private var sawState = false
     private var players: [MRPlayer] = []
@@ -170,12 +173,13 @@ final class MediaRemoteHelper {
         return queue.sync { artworks.values.first { $0.artworkId == id } }
     }
 
-    /// Komenda tylko do odtwarzacza z ostatniego stanu. `completion(true)` wyłącznie po `ack`
-    /// z `ok:true` w czasie `ackTimeout`; wołane na kolejce globalnej.
-    func send(_ command: MRCommand, bundle: String, completion: @escaping (Bool) -> Void) {
+    /// Komenda tylko do odtwarzacza z ostatniego stanu. `completion(.ok)` wyłącznie po `ack`
+    /// z `ok:true`; `.rejected` gdy komenda jest niewysyłalna albo `ack` przyszedł z `ok:false`;
+    /// `.timedOut`, gdy `ack` nie przyszedł w czasie `ackTimeout`. Wołane na kolejce globalnej.
+    func send(_ command: MRCommand, bundle: String, completion: @escaping (HelperCommandResult) -> Void) {
         queue.async {
             guard let input = self.input, self.players.contains(where: { $0.bundle == bundle }) else {
-                DispatchQueue.global(qos: .userInitiated).async { completion(false) }
+                DispatchQueue.global(qos: .userInitiated).async { completion(.rejected) }
                 return
             }
             let pending = PendingAck(id: UUID(), cmd: command.rawValue, bundle: bundle, completion: completion)
@@ -183,11 +187,11 @@ final class MediaRemoteHelper {
             do {
                 try input.write(contentsOf: MediaRemoteProtocol.encode(command: command, bundle: bundle))
             } catch {
-                self.resolveAck(id: pending.id, ok: false)
+                self.resolveAck(id: pending.id, result: .rejected)
                 return
             }
             self.queue.asyncAfter(deadline: .now() + self.timing.ackTimeout) {
-                self.resolveAck(id: pending.id, ok: false)
+                self.resolveAck(id: pending.id, result: .timedOut)
             }
         }
     }
@@ -225,7 +229,7 @@ final class MediaRemoteHelper {
         clearState()
         sawHello = false
         sawState = false
-        startedAt = Date()
+        startedAt = ProcessInfo.processInfo.systemUptime
         lastLineAt = startedAt
         pendingExitCode = nil
         outputClosed = false
@@ -265,7 +269,7 @@ final class MediaRemoteHelper {
     }
 
     private func handle(line: Data) {
-        lastLineAt = Date()
+        lastLineAt = ProcessInfo.processInfo.systemUptime
         guard let message = MediaRemoteProtocol.parse(line: line) else { return }
         switch message {
         case .hello:
@@ -283,7 +287,7 @@ final class MediaRemoteHelper {
             artworks[artwork.bundle] = artwork
         case .ack(let cmd, let bundle, let ok):
             if let pending = pendingAcks.first(where: { $0.cmd == cmd && $0.bundle == bundle }) {
-                resolveAck(id: pending.id, ok: ok)
+                resolveAck(id: pending.id, result: ok ? .ok : .rejected)
             }
         case .error(let reason, let symbol):
             NSLog("Wokyintosh: pomocnik Now Playing zgłosił \(reason) \(symbol)")
@@ -303,9 +307,9 @@ final class MediaRemoteHelper {
 
     private func checkHealth(generation current: Int) {
         guard current == generation, let process else { return }
-        let now = Date()
-        let helloMissing = !sawHello && now.timeIntervalSince(startedAt) >= timing.helloTimeout
-        let silent = now.timeIntervalSince(lastLineAt) >= timing.silenceLimit
+        let now = ProcessInfo.processInfo.systemUptime
+        let helloMissing = !sawHello && now - startedAt >= timing.helloTimeout
+        let silent = now - lastLineAt >= timing.silenceLimit
         guard helloMissing || silent else { return }
 
         watchdog?.cancel()
@@ -368,15 +372,17 @@ final class MediaRemoteHelper {
         buffer = Data()
     }
 
-    private func resolveAck(id: UUID, ok: Bool) {
+    private func resolveAck(id: UUID, result: HelperCommandResult) {
         guard let index = pendingAcks.firstIndex(where: { $0.id == id }) else { return }
         let pending = pendingAcks.remove(at: index)
-        DispatchQueue.global(qos: .userInitiated).async { pending.completion(ok) }
+        DispatchQueue.global(qos: .userInitiated).async { pending.completion(result) }
     }
 
+    /// Wołane, gdy pomocnik kończy działanie albo zostaje zatrzymany: to nie timeout,
+    /// więc dogrywka AppleScriptem dla wybranego odtwarzacza wciąż ma sens.
     private func failPendingAcks() {
         for pending in pendingAcks {
-            resolveAck(id: pending.id, ok: false)
+            resolveAck(id: pending.id, result: .rejected)
         }
     }
 }

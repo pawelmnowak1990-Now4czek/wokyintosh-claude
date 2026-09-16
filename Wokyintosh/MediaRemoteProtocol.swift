@@ -30,6 +30,19 @@ enum MRCommand: String {
     case previousTrack
 }
 
+/// Wynik komendy wysłanej do pomocnika (sekcja 8 specu). Rozróżnia realne odrzucenie
+/// (bezpieczne do powtórki przez AppleScript) od timeoutu (MediaRemote mogła już wykonać
+/// komendę, więc powtórka zdublowałaby akcję).
+enum HelperCommandResult: Equatable {
+    /// `ack` z `ok:true`.
+    case ok
+    /// `ack` z `ok:false`, komenda niewysyłalna (brak wejścia / bundle spoza obecnych
+    /// odtwarzaczy / błąd zapisu) albo oczekujące komendy unieważnione przez koniec pomocnika.
+    case rejected
+    /// Brak `ack` w czasie `ackTimeout`.
+    case timedOut
+}
+
 enum HelperMessage: Equatable {
     case hello(version: Int)
     case state([MRPlayer])

@@ -27,6 +27,9 @@ final class NowPlayingMonitor {
     private let clock: () -> Date
     private let selectionLock = NSLock()
     private var selectedBundle: String?
+    // Odczyt iTunes czeka do 2.5 s, a migawki lecą co 1.8 s na wspólnej kolejce — bez zamka
+    // dwie migawki naraz czytałyby i pisały ten sam słownik (wyścig, potencjalny crash).
+    private let artworkCacheLock = NSLock()
     private var artworkCache: [String: String] = [:]
 
     init(helper: MediaRemoteHelper? = nil, clock: @escaping () -> Date = Date.init) {
@@ -52,25 +55,25 @@ final class NowPlayingMonitor {
     /// Komenda z przycisku: przez pomocnika do wybranego odtwarzacza, a gdy się nie da,
     /// AppleScript dla Spotify i Music (sekcja 8 specu). `completion` na `completionQueue`.
     func perform(_ action: MediaAction, completionQueue: DispatchQueue = .main, completion: @escaping () -> Void) {
-        let viaAppleScript = {
+        guard let helper, let bundle = currentSelection(), helper.freshPlayers() != nil else {
             DispatchQueue.main.async {
                 MediaControl.perform(action)
                 completionQueue.async(execute: completion)
             }
-        }
-        guard let helper, let bundle = currentSelection(), helper.freshPlayers() != nil else {
-            viaAppleScript()
             return
         }
-        helper.send(MediaRemoteProtocol.command(for: action), bundle: bundle) { ok in
-            if ok {
-                completionQueue.async(execute: completion)
-            } else if NowPlayingSelection.shouldFallBackToAppleScript(bundle: bundle) {
-                viaAppleScript()
-            } else {
-                NSLog("Wokyintosh: \(bundle) nie przyjął komendy \(action.rawValue)")
-                completionQueue.async(execute: completion)
+        helper.send(MediaRemoteProtocol.command(for: action), bundle: bundle) { result in
+            if let player = NowPlayingSelection.appleScriptFallbackPlayer(bundle: bundle, result: result) {
+                DispatchQueue.main.async {
+                    MediaControl.perform(action, player: player)
+                    completionQueue.async(execute: completion)
+                }
+                return
             }
+            if result != .ok {
+                NSLog("Wokyintosh: \(bundle) nie przyjął komendy \(action.rawValue) (\(result))")
+            }
+            completionQueue.async(execute: completion)
         }
     }
 
@@ -207,7 +210,10 @@ final class NowPlayingMonitor {
 
     private func artworkURL(track: String, artist: String) -> String {
         let key = "\(artist.lowercased())|\(track.lowercased())"
-        if let cached = artworkCache[key] { return cached }
+        artworkCacheLock.lock()
+        let cached = artworkCache[key]
+        artworkCacheLock.unlock()
+        if let cached { return cached }
 
         let semaphore = DispatchSemaphore(value: 0)
         var resultURL = ""
@@ -236,7 +242,9 @@ final class NowPlayingMonitor {
         }.resume()
 
         _ = semaphore.wait(timeout: .now() + 2.5)
+        artworkCacheLock.lock()
         artworkCache[key] = resultURL
+        artworkCacheLock.unlock()
         return resultURL
     }
 }

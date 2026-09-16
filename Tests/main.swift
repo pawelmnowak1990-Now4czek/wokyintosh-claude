@@ -315,9 +315,18 @@ assertEqual(
 )
 assertEqual(NowPlayingSelection.nowPlayingData(for: mrPlayer(musicBundle, name: ""), now: 1010, artworkURL: "x").app, musicBundle, "mapowanie: pusta nazwa daje bundle")
 assertEqual(NowPlayingSelection.nowPlayingData(for: mrPlayer(musicBundle), now: 1010, artworkURL: "x").state, "paused", "mapowanie: rate 0 to pauza")
-assertEqual(NowPlayingSelection.shouldFallBackToAppleScript(bundle: musicBundle), true, "zapas: Music")
-assertEqual(NowPlayingSelection.shouldFallBackToAppleScript(bundle: "com.spotify.client"), true, "zapas: Spotify")
-assertEqual(NowPlayingSelection.shouldFallBackToAppleScript(bundle: diaBundle), false, "zapas: Dia bez AppleScript")
+// Mapowanie bundle -> odtwarzacz AppleScript (finding 3 z reviewu).
+assertEqual(MediaControl.player(forBundle: musicBundle), MediaPlayerApp.music, "mapa odtwarzacza: Music")
+assertEqual(MediaControl.player(forBundle: "com.spotify.client"), MediaPlayerApp.spotify, "mapa odtwarzacza: Spotify")
+assertEqual(MediaControl.player(forBundle: diaBundle), nil, "mapa odtwarzacza: Dia bez AppleScript")
+
+// Dogrywka AppleScriptem po komendzie do pomocnika (finding 4 z reviewu): tylko odrzucenie
+// dogrywamy, i tylko dla Music/Spotify — timeout mógł już wykonać komendę przez MediaRemote.
+assertEqual(NowPlayingSelection.appleScriptFallbackPlayer(bundle: musicBundle, result: .rejected), MediaPlayerApp.music, "zapas: Music odrzucony dogrywa AppleScript")
+assertEqual(NowPlayingSelection.appleScriptFallbackPlayer(bundle: "com.spotify.client", result: .rejected), MediaPlayerApp.spotify, "zapas: Spotify odrzucony dogrywa AppleScript")
+assertEqual(NowPlayingSelection.appleScriptFallbackPlayer(bundle: musicBundle, result: .timedOut), nil, "zapas: timeout nie dogrywa (mogło się już wykonać)")
+assertEqual(NowPlayingSelection.appleScriptFallbackPlayer(bundle: musicBundle, result: .ok), nil, "zapas: ok nie dogrywa")
+assertEqual(NowPlayingSelection.appleScriptFallbackPlayer(bundle: diaBundle, result: .rejected), nil, "zapas: Dia bez AppleScript nawet przy odrzuceniu")
 
 // Polityka restartów pomocnika (sekcja 9 specu).
 var restartPolicy = HelperRestartPolicy()
@@ -373,11 +382,11 @@ func waitUntil(_ timeout: TimeInterval, _ condition: () -> Bool) -> Bool {
     return condition()
 }
 
-func sendAndWait(_ helper: MediaRemoteHelper, _ command: MRCommand, _ bundle: String) -> Bool? {
+func sendAndWait(_ helper: MediaRemoteHelper, _ command: MRCommand, _ bundle: String) -> HelperCommandResult? {
     let done = DispatchSemaphore(value: 0)
-    var result: Bool?
-    helper.send(command, bundle: bundle) { ok in
-        result = ok
+    var result: HelperCommandResult?
+    helper.send(command, bundle: bundle) { value in
+        result = value
         done.signal()
     }
     _ = done.wait(timeout: .now() + 3)
@@ -414,9 +423,9 @@ assertEqual(workingHelper.freshPlayers()?.first?.title, "Film", "nadzór: odtwar
 assertEqual(workingHelper.freshPlayers(now: Date().addingTimeInterval(10)), nil, "nadzór: stary stan jest nieświeży")
 assertEqual(workingHelper.artwork(id: "a1")?.data, Data([1, 2, 3]), "nadzór: okładka w magazynie")
 assertEqual(workingHelper.artwork(id: "inna"), nil, "nadzór: nieznana okładka")
-assertEqual(sendAndWait(workingHelper, .togglePlayPause, "company.thebrowser.dia"), true, "nadzór: ack ok z procesu")
-assertEqual(sendAndWait(workingHelper, .nextTrack, "company.thebrowser.dia"), false, "nadzór: brak ack w czasie to porażka")
-assertEqual(sendAndWait(workingHelper, .togglePlayPause, "nie.ma.takiego"), false, "nadzór: odtwarzacz spoza stanu odrzucony")
+assertEqual(sendAndWait(workingHelper, .togglePlayPause, "company.thebrowser.dia"), .ok, "nadzór: ack ok z procesu")
+assertEqual(sendAndWait(workingHelper, .nextTrack, "company.thebrowser.dia"), .timedOut, "nadzór: brak ack w czasie to timeout")
+assertEqual(sendAndWait(workingHelper, .togglePlayPause, "nie.ma.takiego"), .rejected, "nadzór: odtwarzacz spoza stanu odrzucony")
 workingHelper.stop()
 assertEqual(workingHelper.freshPlayers(), nil, "nadzór: po stop brak stanu")
 

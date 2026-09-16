@@ -52,9 +52,26 @@ enum MediaControl {
         return nil
     }
 
+    /// Czysta mapa identyfikatora paczki na odtwarzacz AppleScript, dla `bundle`
+    /// z wyboru Now Playing (finding 4 z reviewu) — bez zgadywania po uruchomionych aplikacjach.
+    static func player(forBundle bundle: String) -> MediaPlayerApp? {
+        switch bundle {
+        case MediaPlayerApp.spotify.bundleID: return .spotify
+        case MediaPlayerApp.music.bundleID: return .music
+        default: return nil
+        }
+    }
+
     @discardableResult
     static func perform(_ action: MediaAction) -> Bool {
         guard let player = activePlayer() else { return false }
+        return perform(action, player: player)
+    }
+
+    /// Komenda do konkretnego odtwarzacza, niezależnie od tego, który jest „aktywny" —
+    /// dla dogrywki po nieudanej komendzie do wybranego w kafelku źródła.
+    @discardableResult
+    static func perform(_ action: MediaAction, player: MediaPlayerApp) -> Bool {
         guard let script = NSAppleScript(source: script(action: action, player: player)) else { return false }
 
         var error: NSDictionary?

@@ -23,7 +23,6 @@ enum ArtworkURL {
 /// Decyzje kafelka Now Playing na danych z MediaRemote (sekcje 6–8 specu).
 enum NowPlayingSelection {
     static let musicBundle = "com.apple.Music"
-    private static let appleScriptBundles: Set<String> = ["com.spotify.client", musicBundle]
     /// Przeglądarki: MediaRemote nie podaje z nich okładek (spike, sekcja 12 specu), a kafelek
     /// nie wie, czy gra YouTube, więc pokazuje ogólny przycisk play zamiast logo.
     static let browserBundles: Set<String> = [
@@ -85,8 +84,12 @@ enum NowPlayingSelection {
         )
     }
 
-    /// Komendę, której pomocnik nie przyjął, powtarzamy przez AppleScript tylko tam, gdzie AppleScript działa.
-    static func shouldFallBackToAppleScript(bundle: String) -> Bool {
-        appleScriptBundles.contains(bundle)
+    /// Odtwarzacz, do którego dogrywamy komendę przez AppleScript, gdy pomocnik jej nie wykonał
+    /// (sekcja 8 specu). Tylko `rejected` dogrywamy — przy `timedOut` MediaRemote mogła komendę
+    /// już wykonać (np. przełączyć play/pauzę), więc powtórka przez AppleScript by ją zdublowała.
+    /// Dogrywka istnieje tylko dla Music i Spotify, bo tylko tam AppleScript działa.
+    static func appleScriptFallbackPlayer(bundle: String, result: HelperCommandResult) -> MediaPlayerApp? {
+        guard result == .rejected else { return nil }
+        return MediaControl.player(forBundle: bundle)
     }
 }
