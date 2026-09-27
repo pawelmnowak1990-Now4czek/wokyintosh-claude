@@ -1,0 +1,52 @@
+{
+  "attach": false,
+  "caption": "12 września 1683 około 18 tysięcy jeźdźców ruszyło w jednej z największych szarż kawalerii w historii. Do papieża Sobieski napisał: „Venimus, vidimus, Deus vicit”. Cesarz, który opuścił Wiedeń jeszcze przed oblężeniem, wrócił po wszystkim i przyjął króla chłodno.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Jan III Sobieski",
+  "format": "scenario",
+  "meme": "Hold my beer",
+  "notes": "",
+  "panels": [
+    "„Tymczasem cesarz:” Leopold odjeżdża karetą z Wiednia.",
+    "Sobieski na Kahlenbergu podaje komuś kufel: „Potrzymaj mi piwo.”",
+    "Husaria zjeżdża ze wzgórz."
+  ],
+  "pl": true,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "A 3-panel horizontal comic in the style of a late-17th-century Baroque battle painting: dramatic skies, warm golden light, gun smoke, dense detail.",
+  "shots": [
+    {
+      "scene": "A black imperial carriage with the Habsburg eagle hurries out of the gates of Vienna; Emperor Leopold I (long Habsburg jaw, full-bottomed wig) glances nervously from the window; Ottoman tents on the horizon.",
+      "texts": [
+        {
+          "en": "Meanwhile, the Emperor:",
+          "k": "cap",
+          "pl": "Tymczasem cesarz:"
+        }
+      ]
+    },
+    {
+      "scene": "King Jan III Sobieski (stout, long mustache, Sarmatian haircut shaved at the sides, fur-trimmed żupan, marshal's baton) stands on the Kahlenberg hill, casually handing a tankard of beer to a hussar beside him while looking down at the besieged city.",
+      "texts": [
+        {
+          "at": "Sobieski",
+          "en": "Hold my beer.",
+          "k": "say",
+          "pl": "Potrzymaj mi piwo."
+        }
+      ]
+    },
+    {
+      "scene": "Thousands of Polish winged hussars with long lances and feathered wings charge down the slopes toward the Ottoman camp.",
+      "texts": []
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Barokowa batalistyka",
+  "title": "Sobieski pod Wiedniem",
+  "when": "12 września 1683, Wiedeń",
+  "year": 1683,
+  "yearLabel": "1683"
+}

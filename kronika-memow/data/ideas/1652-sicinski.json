@@ -1,0 +1,65 @@
+{
+  "attach": false,
+  "caption": "W 1652 roku sprzeciw jednego posła po raz pierwszy zerwał sejm. Liberum veto paraliżowało państwo przez ponad sto lat, aż zniosła je Konstytucja 3 Maja.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Władysław Siciński",
+  "format": "scenario",
+  "meme": "Mic drop",
+  "notes": "",
+  "panels": [
+    "Marszałek: „Czy ktoś sprzeciwia się przedłużeniu obrad?”",
+    "Poseł Siciński: „Nie pozwalam.” Upuszcza mikrofon i wychodzi.",
+    "„Rzeczpospolita przez następne sto lat:” i pani w koronie w pozie „This is fine”."
+  ],
+  "pl": true,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "A 3-panel horizontal comic in the style of 17th-century Polish Sarmatian painting: stiff, flat figures, deep reds and blacks, rich kontusz costumes, dark backgrounds.",
+  "shots": [
+    {
+      "scene": "The Sejm chamber in Warsaw, 1652: a crowded hall of Polish noblemen in kontusz robes and fur hats; the Marshal stands at the front holding his staff, addressing the room.",
+      "texts": [
+        {
+          "at": "the Marshal",
+          "en": "Does anyone object to extending the session?",
+          "k": "say",
+          "pl": "Czy ktoś sprzeciwia się przedłużeniu obrad?"
+        }
+      ]
+    },
+    {
+      "scene": "A single envoy, Władysław Siciński, stands in the doorway, drops a small microphone as in the 'mic drop' meme and turns to walk out; the noblemen gasp.",
+      "texts": [
+        {
+          "at": "Siciński",
+          "en": "I do not allow it.",
+          "k": "say",
+          "pl": "Nie pozwalam."
+        }
+      ]
+    },
+    {
+      "scene": "An allegorical figure of the Polish-Lithuanian Commonwealth, a crowned lady in armor, sits calmly at a table in a room on fire, cup in hand, like the 'This is fine' meme.",
+      "texts": [
+        {
+          "en": "The Commonwealth for the next 100 years:",
+          "k": "cap",
+          "pl": "Rzeczpospolita przez następne sto lat:"
+        },
+        {
+          "at": "the crowned lady",
+          "en": "This is fine.",
+          "k": "say",
+          "pl": "This is fine."
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Malarstwo sarmackie",
+  "title": "Pierwsze liberum veto",
+  "when": "1652, sejm w Warszawie",
+  "year": 1652,
+  "yearLabel": "1652"
+}

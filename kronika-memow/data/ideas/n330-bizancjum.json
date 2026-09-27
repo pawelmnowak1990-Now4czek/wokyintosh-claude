@@ -1,0 +1,56 @@
+{
+  "attach": true,
+  "caption": "Mieszkańcy Konstantynopola do końca nazywali siebie Rzymianami, a swoje państwo Cesarstwem Rzymskim. Nazwę „Cesarstwo Bizantyjskie” spopularyzował dopiero niemiecki uczony Hieronim Wolf w 1557 roku, ponad sto lat po upadku Konstantynopola.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Cesarz bizantyjski",
+  "format": "template",
+  "meme": "They're the same picture",
+  "notes": "",
+  "panels": [
+    "Renesansowy uczony: „Znajdź różnice między tym obrazkiem a tym obrazkiem.”",
+    "Dwa identyczne obrazy: „Cesarstwo Rzymskie” i „Bizancjum”.",
+    "Cesarz bizantyjski z kamienną twarzą: „They're the same picture.”"
+  ],
+  "pl": false,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "Recreate the attached 'They're the same picture' meme template (a person handed two pictures, the two pictures side by side, then a deadpan face) as a Byzantine mosaic: gold tesserae background, flat frontal figures, jewel colors. Keep the three-panel layout.",
+  "shots": [
+    {
+      "scene": "Panel 1: a German Renaissance scholar in a black gown and cap hands two framed pictures to a Byzantine emperor in a jeweled crown and purple robes. Panel 2: the two pictures side by side, both showing the same double-headed eagle over the walls of Constantinople. Panel 3: the emperor's deadpan face.",
+      "texts": [
+        {
+          "at": "the scholar in panel 1",
+          "en": "Find the differences between this picture and this picture.",
+          "k": "say",
+          "pl": "Znajdź różnice między tym obrazkiem a tym obrazkiem."
+        },
+        {
+          "at": "the left picture",
+          "en": "Roman Empire",
+          "k": "label",
+          "pl": "Cesarstwo Rzymskie"
+        },
+        {
+          "at": "the right picture",
+          "en": "Byzantine Empire",
+          "k": "label",
+          "pl": "Bizancjum"
+        },
+        {
+          "at": "the emperor in panel 3",
+          "en": "They're the same picture.",
+          "k": "say",
+          "pl": "They're the same picture."
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Mozaika bizantyjska",
+  "title": "Rzym czy Bizancjum?",
+  "when": "330–1453, Konstantynopol",
+  "year": 330,
+  "yearLabel": "330–1453"
+}

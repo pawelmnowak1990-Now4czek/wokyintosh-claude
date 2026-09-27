@@ -1,0 +1,976 @@
+<title>Kronika memów</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Grenze+Gotisch:wght@600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    /* Pigment palette: lead white, lamp black, Prussian blue, ochre, verdigris */
+    --bg: #ECEEF2;
+    --surface: #FFFFFF;
+    --surface-2: #F4F5F8;
+    --ink: #16181D;
+    --muted: #586072;
+    --line: #D7DBE3;
+    --accent: #1F4B7A;
+    --accent-soft: #E1E9F4;
+    --on-accent: #FFFFFF;
+    --idea-ink: #474C5C;
+    --idea-bg: #E3E6ED;
+    --idea-dot: #7C8295;
+    --art-ink: #6F4F00;
+    --art-bg: #F4E6C0;
+    --art-dot: #B8860B;
+    --posted-ink: #15625A;
+    --posted-bg: #D2ECE6;
+    --posted-dot: #2F8F83;
+    --danger: #A3312A;
+    --toast-bg: #16181D;
+    --toast-ink: #F4F5F8;
+
+    --f-display: "Grenze Gotisch", "EB Garamond", Georgia, serif;
+    --f-serif: "EB Garamond", Georgia, "Times New Roman", serif;
+    --f-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --f-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0F1116;
+      --surface: #171A21;
+      --surface-2: #1E222B;
+      --ink: #E8EAEF;
+      --muted: #9BA2B1;
+      --line: #2B303B;
+      --accent: #8FB5E6;
+      --accent-soft: #1D2A3C;
+      --on-accent: #0F1116;
+      --idea-ink: #C7CBD7;
+      --idea-bg: #2A2E39;
+      --idea-dot: #8E94A6;
+      --art-ink: #E9C56B;
+      --art-bg: #3A3016;
+      --art-dot: #D9A945;
+      --posted-ink: #82D5C7;
+      --posted-bg: #16332F;
+      --posted-dot: #4DB6A8;
+      --danger: #F08A80;
+      --toast-bg: #E8EAEF;
+      --toast-ink: #0F1116;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0F1116;
+    --surface: #171A21;
+    --surface-2: #1E222B;
+    --ink: #E8EAEF;
+    --muted: #9BA2B1;
+    --line: #2B303B;
+    --accent: #8FB5E6;
+    --accent-soft: #1D2A3C;
+    --on-accent: #0F1116;
+    --idea-ink: #C7CBD7;
+    --idea-bg: #2A2E39;
+    --idea-dot: #8E94A6;
+    --art-ink: #E9C56B;
+    --art-bg: #3A3016;
+    --art-dot: #D9A945;
+    --posted-ink: #82D5C7;
+    --posted-bg: #16332F;
+    --posted-dot: #4DB6A8;
+    --danger: #F08A80;
+    --toast-bg: #E8EAEF;
+    --toast-ink: #0F1116;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--f-ui);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .wrap {
+    max-width: 940px;
+    margin-inline: auto;
+    padding-inline: 16px;
+    padding-block: 28px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  @media (min-width: 720px) { .wrap { padding-inline: 28px; padding-block: 40px 96px; } }
+
+  /* Masthead */
+  .mast { display: grid; gap: 18px; align-items: end; }
+  @media (min-width: 760px) { .mast { grid-template-columns: 1fr 250px; } }
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: clamp(42px, 8vw, 64px);
+    line-height: 0.95;
+    margin: 0;
+    color: var(--accent);
+    letter-spacing: 0.01em;
+  }
+  .lede { margin: 12px 0 0; max-width: 58ch; color: var(--muted); }
+  .progress { display: grid; gap: 8px; }
+  .bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--line); }
+  .bar span { height: 100%; transition: width .3s ease; }
+  .bar .idea { background: var(--idea-dot); }
+  .bar .art { background: var(--art-dot); }
+  .bar .posted { background: var(--posted-dot); }
+  .progress-note { margin: 0; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .progress-note b { color: var(--ink); font-weight: 600; }
+  .flow { margin: 0; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+  .tab {
+    appearance: none; border: 0; background: none; cursor: pointer;
+    color: var(--muted); padding: 10px 12px; margin-bottom: -1px;
+    border-bottom: 2px solid transparent; white-space: nowrap;
+    display: inline-flex; gap: 8px; align-items: center; font-size: 14.5px;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+  .tab .n {
+    font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 500;
+    padding: 1px 7px; border-radius: 999px; background: var(--surface); color: var(--muted);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot.idea { background: var(--idea-dot); }
+  .dot.art { background: var(--art-dot); }
+  .dot.posted { background: var(--posted-dot); }
+
+  /* Toolbar */
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+  .search { flex: 1 1 240px; min-width: 0; position: relative; }
+  .search input {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--surface); font-size: 14.5px;
+  }
+  .ctl { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .seg-ctl { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+  .seg-ctl button {
+    appearance: none; border: 0; background: none; cursor: pointer;
+    padding: 7px 11px; font-size: 13.5px; color: var(--muted); white-space: nowrap;
+  }
+  .seg-ctl button + button { border-left: 1px solid var(--line); }
+  .seg-ctl button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+  .seg-ctl button:disabled { cursor: default; }
+
+  .btn {
+    appearance: none; cursor: pointer; border: 1px solid var(--line); background: var(--surface);
+    color: var(--ink); padding: 8px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--muted); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .btn.sm { padding: 4px 10px; font-size: 12.5px; border-radius: 6px; }
+  .btn.link { border: 0; background: none; padding: 4px 0; text-decoration: underline; text-underline-offset: 3px; }
+  .btn.danger { color: var(--danger); }
+  .btn.solid-danger { background: var(--danger); border-color: var(--danger); color: var(--surface); }
+  .toggle-pl[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+  .notice {
+    margin: 0; padding: 10px 14px; border-radius: 8px; font-size: 14px;
+    background: var(--art-bg); color: var(--art-ink);
+  }
+
+  /* Add form */
+  .addpanel {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 18px; display: grid; gap: 14px;
+  }
+  .addpanel h2 { margin: 0; font-family: var(--f-serif); font-size: 22px; font-weight: 600; }
+  .addpanel .help { margin: 0; font-size: 13.5px; color: var(--muted); max-width: 70ch; }
+  .grid2 { display: grid; gap: 12px; grid-template-columns: 1fr; }
+  @media (min-width: 640px) { .grid2 { grid-template-columns: 1fr 1fr; } }
+  .f { display: grid; gap: 4px; font-size: 12.5px; color: var(--muted); font-weight: 500; }
+  .f input, .f textarea {
+    width: 100%; font-size: 14px; font-weight: 400; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px;
+  }
+  .f textarea { resize: vertical; min-height: 64px; line-height: 1.45; }
+  .f input:disabled, .f textarea:disabled { background: var(--surface-2); }
+  .check { display: inline-flex; gap: 8px; align-items: center; font-size: 14px; color: var(--ink); }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .form-err { color: var(--danger); font-size: 13px; margin: 0; }
+
+  /* List + cards */
+  .list { display: flex; flex-direction: column; gap: 10px; }
+  .status-line { margin: 0; color: var(--muted); padding: 24px 0; text-align: center; }
+  .card {
+    display: grid; grid-template-columns: 92px minmax(0, 1fr); column-gap: 18px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px;
+  }
+  .date { font-family: var(--f-serif); color: var(--accent); line-height: 1.05; padding-top: 3px; }
+  .date .y { display: block; font-size: 25px; font-weight: 600; font-variant-numeric: lining-nums tabular-nums; }
+  .date .era { display: block; margin-top: 4px; font-size: 14px; color: var(--muted); letter-spacing: .04em; }
+  .date .y.long { font-size: 18px; }
+  @media (max-width: 560px) {
+    .card { grid-template-columns: minmax(0, 1fr); row-gap: 6px; padding: 14px; }
+    .date { display: flex; gap: 6px; align-items: baseline; }
+    .date .y, .date .y.long { font-size: 17px; }
+    .date .era { margin-top: 0; font-size: 13px; }
+  }
+  .head { display: flex; gap: 14px; align-items: flex-start; justify-content: space-between; }
+  .head-main { flex: 1; min-width: 0; cursor: pointer; }
+  .title { margin: 0; font-family: var(--f-serif); font-size: 22px; font-weight: 600; line-height: 1.2; text-wrap: balance; }
+  .title button {
+    appearance: none; border: 0; background: none; padding: 0; margin: 0; cursor: pointer;
+    text-align: left; font: inherit; color: inherit;
+  }
+  .title .chev { display: inline-block; margin-left: 6px; font-family: var(--f-ui); font-size: 13px; color: var(--muted); transition: transform .2s; }
+  .title button[aria-expanded="true"] .chev { transform: rotate(90deg); }
+  .meta { margin: 5px 0 0; display: flex; flex-wrap: wrap; gap: 2px 14px; color: var(--muted); font-size: 14px; }
+  .meta .meme { color: var(--ink); font-family: var(--f-serif); font-style: italic; font-size: 16px; }
+  .chips { margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; font-weight: 600;
+    padding: 2px 7px; border-radius: 4px; background: var(--surface-2); color: var(--muted);
+  }
+  .chip.pl { background: var(--accent-soft); color: var(--accent); }
+  .side { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600;
+    padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .pill.idea { background: var(--idea-bg); color: var(--idea-ink); }
+  .pill.art { background: var(--art-bg); color: var(--art-ink); }
+  .pill.posted { background: var(--posted-bg); color: var(--posted-ink); }
+  .adv {
+    appearance: none; border: 1px solid var(--line); background: var(--surface); cursor: pointer;
+    font-size: 12.5px; padding: 3px 9px; border-radius: 6px; color: var(--ink); white-space: nowrap;
+  }
+  .adv:hover { border-color: var(--accent); color: var(--accent); }
+
+  .detail {
+    grid-column: 2; margin-top: 14px; padding-top: 16px; border-top: 1px solid var(--line);
+    display: grid; gap: 20px;
+  }
+  @media (max-width: 560px) { .detail { grid-column: 1; } }
+  .sec { display: grid; gap: 8px; }
+  .sec-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .sec-label { margin: 0; font-size: 11.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .panels { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; counter-reset: k; }
+  .panels li { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 10px; font-family: var(--f-serif); font-size: 17px; line-height: 1.4; }
+  .panels li::before {
+    counter-increment: k; content: "Kadr " counter(k);
+    font-family: var(--f-ui); font-size: 12px; color: var(--muted); padding-top: 3px; font-variant-numeric: tabular-nums;
+  }
+  .panels.single li { grid-template-columns: minmax(0, 1fr); }
+  .panels.single li::before { content: none; }
+  .caption { margin: 0; font-family: var(--f-serif); font-size: 17px; line-height: 1.5; max-width: 66ch; }
+  .hint { margin: 0; font-size: 13px; color: var(--art-ink); background: var(--art-bg); padding: 6px 10px; border-radius: 6px; }
+  .prompt-wrap { overflow-x: auto; }
+  .prompt {
+    margin: 0; font-family: var(--f-mono); font-size: 12.5px; line-height: 1.6;
+    white-space: pre-wrap; overflow-wrap: anywhere;
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
+  }
+  .work { display: grid; gap: 12px; }
+  .postlink { font-size: 14px; color: var(--accent); }
+  .del-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 14px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%) translateY(8px);
+    background: var(--toast-bg); color: var(--toast-ink);
+    padding: 9px 16px; border-radius: 8px; font-size: 13.5px;
+    opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; max-width: calc(100% - 32px);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <h1>Kronika memów</h1>
+      <p class="lede">Scenariusze memów historycznych: mem jako puenta, prawdziwe wydarzenie jako setup, fakt w opisie. Każdy pomysł ma kadry, gotowy opis do posta i prompt graficzny.</p>
+    </div>
+    <div class="progress" aria-label="Postęp pracy">
+      <p class="flow">Pomysł → Grafika → Opublikowane</p>
+      <div class="bar" id="bar"><span class="idea" style="width:100%"></span><span class="art" style="width:0"></span><span class="posted" style="width:0"></span></div>
+      <p class="progress-note" id="progress-note">Wczytywanie…</p>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Status" id="tabs">
+    <button class="tab" role="tab" data-tab="all" aria-selected="true">Wszystkie <span class="n" data-count="all">0</span></button>
+    <button class="tab" role="tab" data-tab="idea" aria-selected="false"><span class="dot idea"></span>Pomysł <span class="n" data-count="idea">0</span></button>
+    <button class="tab" role="tab" data-tab="art" aria-selected="false"><span class="dot art"></span>Grafika <span class="n" data-count="art">0</span></button>
+    <button class="tab" role="tab" data-tab="posted" aria-selected="false"><span class="dot posted"></span>Opublikowane <span class="n" data-count="posted">0</span></button>
+  </nav>
+
+  <div class="toolbar">
+    <div class="search">
+      <input id="q" type="search" placeholder="Szukaj: postać, mem, epoka, styl…" aria-label="Szukaj pomysłów" autocomplete="off">
+    </div>
+    <button class="btn toggle-pl" id="pl-only" aria-pressed="false">Tylko wątki polskie</button>
+    <div class="ctl">
+      <span id="lang-label">Tekst w grafice</span>
+      <div class="seg-ctl" role="group" aria-labelledby="lang-label" id="lang">
+        <button type="button" data-lang="pl" aria-pressed="true">PL</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+        <button type="button" data-lang="none" aria-pressed="false">Bez tekstu</button>
+      </div>
+    </div>
+    <button class="btn primary" id="add-open" aria-expanded="false" aria-controls="add-panel">Nowy pomysł</button>
+  </div>
+
+  <p class="notice" id="notice" role="status" hidden></p>
+
+  <form class="addpanel" id="add-panel" hidden novalidate>
+    <h2>Nowy pomysł</h2>
+    <p class="help">Test każdego pomysłu: czy mem streszcza to, co postać naprawdę zrobiła? Kadry wpisz po jednym w linii. Prompt możesz uzupełnić później.</p>
+    <div class="grid2">
+      <label class="f" for="n-title">Tytuł roboczy<input id="n-title" required placeholder="np. Galileusz przed inkwizycją"></label>
+      <label class="f" for="n-meme">Mem<input id="n-meme" required placeholder="np. And yet it moves"></label>
+      <label class="f" for="n-figure">Postać<input id="n-figure" placeholder="np. Galileusz"></label>
+      <label class="f" for="n-when">Kiedy i gdzie<input id="n-when" placeholder="np. 22 czerwca 1633, Rzym"></label>
+      <label class="f" for="n-year">Rok (p.n.e. jako „75 p.n.e.” albo „-75”)<input id="n-year" inputmode="numeric" placeholder="np. 1633"></label>
+      <label class="f" for="n-style">Styl graficzny<input id="n-style" placeholder="np. Barok w stylu Caravaggia"></label>
+    </div>
+    <label class="f" for="n-panels">Kadry<textarea id="n-panels" rows="3" placeholder="Kadr 1: …&#10;Kadr 2: …"></textarea></label>
+    <label class="f" for="n-caption">Opis do posta (fakt)<textarea id="n-caption" rows="3"></textarea></label>
+    <label class="f" for="n-prompt">Prompt graficzny<textarea id="n-prompt" rows="4" placeholder="A 2-panel horizontal comic in the style of…"></textarea></label>
+    <label class="check" for="n-pl"><input type="checkbox" id="n-pl"> Wątek polski</label>
+    <p class="form-err" id="form-err" hidden></p>
+    <div class="actions">
+      <button class="btn primary" type="submit" id="add-submit">Dodaj do kroniki</button>
+      <button class="btn" type="button" id="add-cancel">Anuluj</button>
+    </div>
+  </form>
+
+  <main class="list" id="list">
+    <p class="status-line" id="status-line">Wczytywanie kroniki…</p>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var STATUS = {
+    idea: { label: "Pomysł" },
+    art: { label: "Grafika" },
+    posted: { label: "Opublikowane" }
+  };
+  var ORDER = ["idea", "art", "posted"];
+  var NEXT = { idea: "art", art: "posted", posted: null };
+  var LANG_LABEL = { pl: "tekst PL", en: "tekst EN", none: "bez tekstu" };
+
+  var store = {
+    get: function (k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  };
+
+  var state = {
+    ideas: new Map(),
+    loaded: false,
+    tab: "all",
+    plOnly: false,
+    q: "",
+    lang: "pl",
+    expanded: new Set(),
+    readOnly: false,
+    pendingDelete: null
+  };
+  var saved = store.get("kronika.lang");
+  if (saved === "pl" || saved === "en" || saved === "none") state.lang = saved;
+  var savedOpen = store.get("kronika.open");
+  try {
+    (savedOpen ? JSON.parse(savedOpen) : ["1812-napoleon-head-out"]).forEach(function (id) { state.expanded.add(String(id)); });
+  } catch (e) { /* ignore */ }
+  function saveOpen() { store.set("kronika.open", JSON.stringify(Array.from(state.expanded))); }
+  var savedTab = store.get("kronika.tab");
+  if (savedTab && (savedTab === "all" || STATUS[savedTab])) state.tab = savedTab;
+
+  var DB = null;
+  var unsub = null;
+  var cards = new Map(); // id -> { el, sig }
+
+  var $ = function (id) { return document.getElementById(id); };
+  var listEl = $("list");
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function safeUrl(u) {
+    var s = String(u || "").trim();
+    return /^https?:\/\//i.test(s) ? s : "";
+  }
+  function today() {
+    var d = new Date();
+    var m = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    return d.getFullYear() + "-" + m + "-" + day;
+  }
+  function kadry(n) {
+    if (n === 1) return "1 kadr";
+    var t = n % 10, h = n % 100;
+    if (t >= 2 && t <= 4 && (h < 12 || h > 14)) return n + " kadry";
+    return n + " kadrów";
+  }
+  function statusOf(i) { return STATUS[i.status] ? i.status : "idea"; }
+
+  function splitYear(label) {
+    var s = String(label || "").trim();
+    if (!s) return { y: "—", era: "" };
+    var m = s.match(/^(.*?)\s*(p\.n\.e\.|n\.e\.|w\.)$/);
+    if (m && m[1]) return { y: m[1], era: m[2] };
+    return { y: s, era: "" };
+  }
+
+  function buildPrompt(i, lang) {
+    if (!Array.isArray(i.shots) || !i.shots.length) return String(i.prompt || "");
+    var out = [];
+    if (i.promptStyle) out.push(i.promptStyle);
+    var multi = i.shots.length > 1;
+    var panelWord = i.panelWord || "Panel";
+    var bubble = i.bubbleWord || "Speech bubble";
+    var hasText = false;
+    i.shots.forEach(function (s, n) {
+      var parts = [(multi ? panelWord + " " + (n + 1) + ": " : "") + (s.scene || "")];
+      (s.texts || []).forEach(function (t) {
+        hasText = true;
+        if (t.k === "ins") {
+          // Period inscription (e.g. Latin): identical in every language, dropped in the no-text version
+          if (lang !== "none" && t.la) parts.push("Inscription: \u201C" + t.la + "\u201D");
+          return;
+        }
+        var txt = lang === "none" ? "" : (t[lang] || t.pl || t.en || "");
+        if (t.k === "say") parts.push(txt ? bubble + " from " + t.at + ": \u201C" + txt + "\u201D" : "Empty " + bubble.toLowerCase() + " from " + t.at + ".");
+        else if (t.k === "label") { if (txt) parts.push("Label on " + t.at + ": \u201C" + txt + "\u201D"); }
+        else if (t.k === "sign") parts.push(txt ? "Text on " + t.at + ": \u201C" + txt + "\u201D" : "Leave " + t.at + " blank.");
+        else if (t.k === "cap") { if (txt) parts.push("Caption box: \u201C" + txt + "\u201D"); }
+      });
+      out.push(parts.join(" "));
+    });
+    if (lang === "none") {
+      out.push(i.noTextLine || "Do not render any text or letters anywhere in the image. Leave speech bubbles and caption areas empty so lettering can be added later.");
+    } else if (hasText) {
+      out.push(i.textLine || (i.attach
+        ? "Render every piece of text exactly as written, in clean, legible lettering."
+        : "Render every piece of text exactly as written, in clean, legible hand lettering, with white speech bubbles and caption boxes."));
+    }
+    if (multi && !i.attach) out.push("Keep each character consistent across " + panelWord.toLowerCase() + "s.");
+    out.push(i.formatLine || (i.attach ? "Keep the template's original aspect ratio." : "Square 1:1 format."));
+    return out.join("\n");
+  }
+
+  function captionFor(i) {
+    return state.lang === "en" && i.captionEn ? i.captionEn : String(i.caption || "");
+  }
+
+  function haystack(i) {
+    return [i.title, i.meme, i.figure, i.when, i.style, i.yearLabel, i.caption, i.captionEn, i.notes]
+      .join(" ").toLowerCase();
+  }
+
+  function baseFiltered() {
+    var q = state.q.trim().toLowerCase();
+    var out = [];
+    state.ideas.forEach(function (i) {
+      if (state.plOnly && !i.pl) return;
+      if (q && haystack(i).indexOf(q) === -1) return;
+      out.push(i);
+    });
+    return out;
+  }
+
+  function sortChrono(a, b) {
+    var ya = typeof a.year === "number" ? a.year : 99999;
+    var yb = typeof b.year === "number" ? b.year : 99999;
+    if (ya !== yb) return ya - yb;
+    return String(a.title || "").localeCompare(String(b.title || ""), "pl");
+  }
+
+  /* ---------- Chrome: tabs, progress ---------- */
+  function renderChrome() {
+    var all = [];
+    state.ideas.forEach(function (i) { all.push(i); });
+    var totals = { idea: 0, art: 0, posted: 0 };
+    all.forEach(function (i) { totals[statusOf(i)]++; });
+    var total = all.length;
+    var bar = $("bar").children;
+    ORDER.forEach(function (s, k) {
+      bar[k].style.width = total ? (totals[s] / total * 100) + "%" : (k === 0 ? "100%" : "0");
+    });
+    $("progress-note").innerHTML = state.loaded
+      ? "<b>" + totals.posted + "</b> z <b>" + total + "</b> opublikowane · <b>" + totals.art + "</b> z grafiką"
+      : "Wczytywanie…";
+
+    var base = baseFiltered();
+    var counts = { all: base.length, idea: 0, art: 0, posted: 0 };
+    base.forEach(function (i) { counts[statusOf(i)]++; });
+    document.querySelectorAll("[data-count]").forEach(function (el) {
+      el.textContent = counts[el.getAttribute("data-count")];
+    });
+    document.querySelectorAll(".tab").forEach(function (t) {
+      t.setAttribute("aria-selected", String(t.getAttribute("data-tab") === state.tab));
+    });
+    document.querySelectorAll("#lang button").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-lang") === state.lang));
+    });
+    $("pl-only").setAttribute("aria-pressed", String(state.plOnly));
+    $("add-open").hidden = state.readOnly || !DB;
+  }
+
+  /* ---------- Cards ---------- */
+  function cardHTML(i) {
+    var st = statusOf(i);
+    var open = state.expanded.has(i.id);
+    var yr = splitYear(i.yearLabel);
+    var next = NEXT[st];
+    var panels = Array.isArray(i.panels) ? i.panels : [];
+    var fmt = i.format === "template" ? "Szablon memu" : "Komiks · " + kadry(panels.length);
+    var h = "";
+    h += '<div class="date"><span class="y' + (yr.y.length > 6 ? " long" : "") + '">' + esc(yr.y) + "</span>" +
+      (yr.era ? '<span class="era">' + esc(yr.era) + "</span>" : "") + "</div>";
+    h += '<div class="body">';
+    h += '<div class="head"><div class="head-main" data-act="toggle">';
+    h += '<h2 class="title"><button type="button" data-act="toggle" aria-expanded="' + open + '" aria-controls="d-' + esc(i.id) + '">' +
+      esc(i.title || "Bez tytułu") + '<span class="chev" aria-hidden="true">›</span></button></h2>';
+    h += '<p class="meta"><span class="meme">„' + esc(i.meme) + "”</span>" +
+      (i.figure ? "<span>" + esc(i.figure) + "</span>" : "") +
+      (i.when ? "<span>" + esc(i.when) + "</span>" : "") + "</p>";
+    h += '<p class="chips"><span class="chip">' + esc(fmt) + "</span>" +
+      (i.style ? '<span class="chip">' + esc(i.style) + "</span>" : "") +
+      (i.pl ? '<span class="chip pl">Wątek polski</span>' : "") + "</p>";
+    h += "</div>";
+    h += '<div class="side"><span class="pill ' + st + '"><span class="dot ' + st + '"></span>' + STATUS[st].label + "</span>" +
+      (next && !state.readOnly ? '<button type="button" class="adv" data-act="advance">→ ' + STATUS[next].label + "</button>" : "") +
+      "</div></div>";
+    if (open) h += detailHTML(i, st, panels);
+    h += "</div>";
+    return h;
+  }
+
+  function detailHTML(i, st, panels) {
+    var ro = state.readOnly ? " disabled" : "";
+    var prompt = buildPrompt(i, state.lang);
+    var id = esc(i.id);
+    var h = '<div class="detail" id="d-' + id + '">';
+    if (panels.length) {
+      h += '<section class="sec"><h3 class="sec-label">' + (panels.length > 1 ? "Kadry" : "Kompozycja") + "</h3>" +
+        '<ol class="panels' + (panels.length > 1 ? "" : " single") + '">' +
+        panels.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ol></section>";
+    }
+    var cap = captionFor(i);
+    if (cap) {
+      var capEn = state.lang === "en" && i.captionEn;
+      h += '<section class="sec"><div class="sec-row"><h3 class="sec-label">Opis do posta' + (capEn ? " · EN" : "") + "</h3>" +
+        '<button type="button" class="btn sm" data-act="copy" data-what="caption">Kopiuj opis</button></div>' +
+        '<p class="caption" id="cap-' + id + '"' + (capEn ? ' lang="en"' : "") + ">" + esc(cap) + "</p></section>";
+    }
+    if (prompt) {
+      h += '<section class="sec"><div class="sec-row"><h3 class="sec-label">Prompt graficzny · ' + LANG_LABEL[state.lang] + "</h3>" +
+        '<button type="button" class="btn sm" data-act="copy" data-what="prompt">Kopiuj prompt</button></div>' +
+        (i.attach ? '<p class="hint">Najpierw wgraj do czatu obrazek szablonu „' + esc(i.meme) + "”, potem wklej prompt.</p>" : "") +
+        '<div class="prompt-wrap"><pre class="prompt" id="pr-' + id + '">' + esc(prompt) + "</pre></div></section>";
+    }
+    h += '<section class="sec work"><h3 class="sec-label">Postęp</h3>';
+    h += '<div class="seg-ctl" role="group" aria-label="Status pomysłu">' + ORDER.map(function (s) {
+      return '<button type="button" data-act="status" data-val="' + s + '" aria-pressed="' + (s === st) + '"' + ro + ">" + STATUS[s].label + "</button>";
+    }).join("") + "</div>";
+    h += '<div class="grid2">' +
+      '<label class="f" for="url-' + id + '">Link do posta<input id="url-' + id + '" type="url" inputmode="url" placeholder="https://x.com/…" data-field="postUrl" value="' + esc(i.postUrl || "") + '"' + ro + "></label>" +
+      '<label class="f" for="date-' + id + '">Data publikacji<input id="date-' + id + '" type="date" data-field="postedAt" value="' + esc(i.postedAt || "") + '"' + ro + "></label>" +
+      "</div>";
+    var link = safeUrl(i.postUrl);
+    if (link) h += '<a class="postlink" href="' + esc(link) + '" target="_blank" rel="noopener noreferrer">Otwórz post ↗</a>';
+    h += '<label class="f" for="notes-' + id + '">Notatki<textarea id="notes-' + id + '" rows="2" data-field="notes" placeholder="Np. lepsza wersja z Gemini, zmienić puentę…"' + ro + ">" + esc(i.notes || "") + "</textarea></label>";
+    h += "</section>";
+    if (!state.readOnly) {
+      h += '<div class="del-row">' + (state.pendingDelete === i.id
+        ? '<span>Usunąć ten pomysł na stałe?</span><button type="button" class="btn sm solid-danger" data-act="del-yes">Usuń</button><button type="button" class="btn sm" data-act="del-no">Anuluj</button>'
+        : '<button type="button" class="btn link danger" data-act="del">Usuń pomysł</button>') + "</div>";
+    }
+    h += "</div>";
+    return h;
+  }
+
+  function sigOf(i) {
+    return JSON.stringify(i) + "|" + state.lang + "|" + state.expanded.has(i.id) + "|" + state.readOnly + "|" + (state.pendingDelete === i.id);
+  }
+
+  function renderList() {
+    renderChrome();
+    var statusLine = $("status-line");
+    if (!state.loaded) return;
+    var visible = baseFiltered().filter(function (i) {
+      return state.tab === "all" || statusOf(i) === state.tab;
+    }).sort(sortChrono);
+
+    var active = document.activeElement;
+    var keep = new Set();
+    visible.forEach(function (i, idx) {
+      keep.add(i.id);
+      var entry = cards.get(i.id);
+      if (!entry) {
+        var el = document.createElement("article");
+        el.className = "card";
+        el.setAttribute("data-id", i.id);
+        entry = { el: el, sig: "" };
+        cards.set(i.id, entry);
+      }
+      var sig = sigOf(i);
+      if (entry.sig !== sig) {
+        var typing = active && entry.el.contains(active) && (active.tagName === "INPUT" || active.tagName === "TEXTAREA");
+        if (!typing) {
+          var refocus = null;
+          if (active && entry.el.contains(active) && active.getAttribute("data-act")) {
+            refocus = '[data-act="' + active.getAttribute("data-act") + '"]' +
+              (active.getAttribute("data-val") ? '[data-val="' + active.getAttribute("data-val") + '"]' : "") +
+              (active.getAttribute("data-what") ? '[data-what="' + active.getAttribute("data-what") + '"]' : "");
+            if (active.closest(".head-main")) refocus = ".title button";
+          }
+          entry.el.innerHTML = cardHTML(i);
+          entry.sig = sig;
+          if (refocus) {
+            var target = entry.el.querySelector(refocus) || entry.el.querySelector(".title button");
+            if (target) target.focus({ preventScroll: true });
+          }
+        }
+      }
+      var at = listEl.children[idx];
+      if (at !== entry.el) listEl.insertBefore(entry.el, at || null);
+    });
+    cards.forEach(function (entry, id) {
+      if (!keep.has(id) && entry.el.parentNode) entry.el.parentNode.removeChild(entry.el);
+      if (!state.ideas.has(id)) cards.delete(id);
+    });
+
+    if (!visible.length) {
+      statusLine.textContent = state.ideas.size
+        ? "Nic nie pasuje do wybranych filtrów."
+        : "Kronika jest pusta. Dodaj pierwszy pomysł przyciskiem „Nowy pomysł”.";
+      statusLine.hidden = false;
+      listEl.appendChild(statusLine);
+    } else {
+      statusLine.hidden = true;
+    }
+  }
+
+  /* ---------- Notices ---------- */
+  var toastTimer = null;
+  function toast(msg) {
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2200);
+  }
+  function notice(msg) {
+    var n = $("notice");
+    if (!msg) { n.hidden = true; n.textContent = ""; return; }
+    n.textContent = msg;
+    n.hidden = false;
+  }
+  function setReadOnly() {
+    if (state.readOnly) return;
+    state.readOnly = true;
+    $("add-panel").hidden = true;
+    notice("Masz dostęp tylko do odczytu. Status i notatki może zmieniać właściciel kroniki albo osoba z uprawnieniami współpracownika.");
+    renderList();
+  }
+
+  /* ---------- Writes: one at a time per document ---------- */
+  var queues = new Map();
+  function write(id, patch) {
+    if (!DB || state.readOnly) return Promise.resolve();
+    var prev = queues.get(id) || Promise.resolve();
+    var next = prev.then(function () { return doWrite(id, patch, false); });
+    queues.set(id, next.catch(function () {}));
+    return next;
+  }
+  function doWrite(id, patch, retried) {
+    return DB.doc("ideas/" + id).update(patch).catch(function (e) {
+      return handleWriteError(e, retried ? null : function () { return doWrite(id, patch, true); });
+    });
+  }
+  function handleWriteError(e, retry) {
+    var code = e && e.code;
+    if (code === "invalid_argument") { setReadOnly(); return; }
+    if (code === "quota_exceeded") { notice("Baza jest pełna. Usuń kilka starych pomysłów, żeby dodać nowe."); return; }
+    if (code === "revoked" || code === "not_granted") { setReadOnly(); return; }
+    if (retry) {
+      return new Promise(function (res) { setTimeout(res, 600 + Math.random() * 900); }).then(retry);
+    }
+    toast("Nie udało się zapisać zmiany. Spróbuj ponownie za chwilę.");
+  }
+
+  /* ---------- Debounced field saves ---------- */
+  var fieldTimers = new Map();
+  function scheduleField(id, field, value, immediate) {
+    var key = id + "::" + field;
+    clearTimeout(fieldTimers.get(key));
+    var fire = function () {
+      fieldTimers.delete(key);
+      var cur = state.ideas.get(id);
+      if (!cur || (cur[field] || "") === value) return;
+      write(id, (function () { var p = {}; p[field] = value; return p; })());
+    };
+    if (immediate) fire();
+    else fieldTimers.set(key, setTimeout(fire, 800));
+  }
+
+  /* ---------- Clipboard ---------- */
+  function selectText(el) {
+    try {
+      var r = document.createRange();
+      r.selectNodeContents(el);
+      var s = window.getSelection();
+      s.removeAllRanges();
+      s.addRange(r);
+    } catch (e) { /* ignore */ }
+  }
+  function copyText(text, el, okMsg) {
+    var fallback = function () {
+      if (el) selectText(el);
+      toast("Tekst zaznaczony. Skopiuj go ręcznie.");
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { toast(okMsg); }, fallback);
+      } else fallback();
+    } catch (e) { fallback(); }
+  }
+
+  /* ---------- Events ---------- */
+  function setStatus(i, s) {
+    if (!STATUS[s] || statusOf(i) === s) return;
+    var patch = { status: s };
+    if (s === "posted" && !i.postedAt) patch.postedAt = today();
+    write(i.id, patch);
+    toast("Status: " + STATUS[s].label);
+  }
+
+  listEl.addEventListener("click", function (ev) {
+    var btn = ev.target.closest("[data-act]");
+    if (!btn || !listEl.contains(btn)) return;
+    var card = btn.closest(".card");
+    if (!card) return;
+    var id = card.getAttribute("data-id");
+    var i = state.ideas.get(id);
+    if (!i) return;
+    var act = btn.getAttribute("data-act");
+    if (act === "toggle") {
+      if (btn.classList.contains("head-main") && ev.target.closest("button")) return;
+      if (window.getSelection && String(window.getSelection()).length && btn.classList.contains("head-main")) return;
+      if (state.expanded.has(id)) state.expanded.delete(id); else state.expanded.add(id);
+      saveOpen();
+      if (state.pendingDelete === id) state.pendingDelete = null;
+      renderList();
+      var tb = card.querySelector(".title button");
+      if (tb) tb.focus({ preventScroll: true });
+      return;
+    }
+    if (act === "advance") { var nx = NEXT[statusOf(i)]; if (nx) setStatus(i, nx); return; }
+    if (act === "status") { setStatus(i, btn.getAttribute("data-val")); return; }
+    if (act === "copy") {
+      var what = btn.getAttribute("data-what");
+      if (what === "prompt") copyText(buildPrompt(i, state.lang), card.querySelector(".prompt"), "Skopiowano prompt (" + LANG_LABEL[state.lang] + ")");
+      else copyText(captionFor(i), card.querySelector(".caption"), "Skopiowano opis");
+      return;
+    }
+    if (act === "del") { state.pendingDelete = id; renderList(); return; }
+    if (act === "del-no") { state.pendingDelete = null; renderList(); return; }
+    if (act === "del-yes") {
+      state.pendingDelete = null;
+      DB.doc("ideas/" + id).delete().then(function () { toast("Usunięto pomysł"); }, function (e) { handleWriteError(e, null); });
+      return;
+    }
+  });
+
+  listEl.addEventListener("input", function (ev) {
+    var f = ev.target.getAttribute && ev.target.getAttribute("data-field");
+    if (!f) return;
+    var card = ev.target.closest(".card");
+    if (!card) return;
+    scheduleField(card.getAttribute("data-id"), f, ev.target.value, f === "postedAt");
+  });
+  listEl.addEventListener("change", function (ev) {
+    var f = ev.target.getAttribute && ev.target.getAttribute("data-field");
+    if (!f) return;
+    var card = ev.target.closest(".card");
+    if (!card) return;
+    scheduleField(card.getAttribute("data-id"), f, ev.target.value, true);
+  });
+  listEl.addEventListener("focusout", function () {
+    setTimeout(function () {
+      var a = document.activeElement;
+      if (!a || !(a.tagName === "INPUT" || a.tagName === "TEXTAREA") || !listEl.contains(a)) renderList();
+    }, 0);
+  });
+
+  $("tabs").addEventListener("click", function (ev) {
+    var t = ev.target.closest(".tab");
+    if (!t) return;
+    state.tab = t.getAttribute("data-tab");
+    store.set("kronika.tab", state.tab);
+    renderList();
+  });
+  $("tabs").addEventListener("keydown", function (ev) {
+    if (ev.key !== "ArrowRight" && ev.key !== "ArrowLeft") return;
+    var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+    var idx = tabs.indexOf(document.activeElement);
+    if (idx < 0) return;
+    var n = tabs[(idx + (ev.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+    n.focus();
+    n.click();
+  });
+  var qTimer = null;
+  $("q").addEventListener("input", function (ev) {
+    clearTimeout(qTimer);
+    var v = ev.target.value;
+    qTimer = setTimeout(function () { state.q = v; renderList(); }, 120);
+  });
+  $("pl-only").addEventListener("click", function () { state.plOnly = !state.plOnly; renderList(); });
+  $("lang").addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-lang]");
+    if (!b) return;
+    state.lang = b.getAttribute("data-lang");
+    store.set("kronika.lang", state.lang);
+    renderList();
+  });
+
+  /* ---------- Add form ---------- */
+  function openForm(open) {
+    $("add-panel").hidden = !open;
+    $("add-open").setAttribute("aria-expanded", String(open));
+    $("form-err").hidden = true;
+    if (open) $("n-title").focus();
+  }
+  $("add-open").addEventListener("click", function () { openForm($("add-panel").hidden); });
+  $("add-cancel").addEventListener("click", function () { openForm(false); $("add-panel").reset(); });
+
+  function parseYear(s) {
+    s = String(s || "").trim();
+    if (!s) return { year: null, label: "" };
+    var bc = /p\.?\s*n\.?\s*e\.?/i.test(s) || /^-/.test(s);
+    var m = s.match(/\d{1,4}/);
+    if (!m) return { year: null, label: s };
+    var n = parseInt(m[0], 10);
+    if (bc) return { year: -n, label: n + " p.n.e." };
+    if (/n\.?\s*e\.?/i.test(s) || n < 500) return { year: n, label: n + " n.e." };
+    return { year: n, label: String(n) };
+  }
+
+  $("add-panel").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    if (!DB || state.readOnly) return;
+    var title = $("n-title").value.trim();
+    var meme = $("n-meme").value.trim();
+    var err = $("form-err");
+    if (!title || !meme) {
+      err.textContent = "Wpisz co najmniej tytuł i mem.";
+      err.hidden = false;
+      (title ? $("n-meme") : $("n-title")).focus();
+      return;
+    }
+    var y = parseYear($("n-year").value);
+    var id = "u-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
+    var data = {
+      title: title,
+      meme: meme,
+      figure: $("n-figure").value.trim(),
+      when: $("n-when").value.trim(),
+      year: y.year,
+      yearLabel: y.label,
+      style: $("n-style").value.trim(),
+      pl: $("n-pl").checked,
+      format: "scenario",
+      attach: false,
+      panels: $("n-panels").value.split("\n").map(function (l) { return l.replace(/^\s*kadr\s*\d+\s*[:.]\s*/i, "").trim(); }).filter(Boolean),
+      caption: $("n-caption").value.trim(),
+      prompt: $("n-prompt").value.trim(),
+      status: "idea",
+      notes: "",
+      postUrl: "",
+      postedAt: "",
+      source: "user",
+      createdAt: new Date().toISOString()
+    };
+    var btn = $("add-submit");
+    btn.disabled = true;
+    DB.collection("ideas").doc(id).set(data).then(function () {
+      btn.disabled = false;
+      $("add-panel").reset();
+      openForm(false);
+      state.expanded.add(id);
+      saveOpen();
+      if (state.tab !== "all" && state.tab !== "idea") { state.tab = "all"; store.set("kronika.tab", "all"); }
+      toast("Dodano do kroniki");
+      renderList();
+    }, function (e) {
+      btn.disabled = false;
+      if (e && e.code === "quota_exceeded") { err.textContent = "Baza jest pełna. Usuń kilka pomysłów i spróbuj ponownie."; err.hidden = false; return; }
+      if (e && (e.code === "invalid_argument" || e.code === "revoked")) { setReadOnly(); return; }
+      err.textContent = "Nie udało się zapisać. Spróbuj ponownie za chwilę.";
+      err.hidden = false;
+    });
+  });
+
+  /* ---------- Data ---------- */
+  var resubscribes = 0;
+  function subscribe() {
+    if (unsub) { try { unsub(); } catch (e) { /* ignore */ } }
+    unsub = DB.collection("ideas").limit(1000).onSnapshot(function (snap) {
+      var m = new Map();
+      snap.docs.forEach(function (d) {
+        var body = d.data();
+        if (!body) return;
+        var copy = Object.assign({}, body);
+        copy.id = d.id;
+        m.set(d.id, copy);
+      });
+      state.ideas = m;
+      state.loaded = true;
+      renderList();
+    }, function (e) {
+      var code = e && e.code;
+      if (code === "unavailable" && resubscribes < 3) {
+        resubscribes++;
+        setTimeout(subscribe, 2000 + Math.random() * 2000);
+        return;
+      }
+      if (code === "revoked") { setReadOnly(); return; }
+      notice("Nie udało się wczytać kroniki. Odśwież stronę za chwilę.");
+    });
+  }
+
+  renderChrome();
+  var claude = window.claude;
+  var ready = claude && typeof claude.use === "function" ? claude.use("db") : Promise.resolve(null);
+  Promise.resolve(ready).then(function (db) {
+    if (!db) {
+      state.loaded = true;
+      $("status-line").textContent = "Baza pomysłów nie jest dostępna w tym widoku. Otwórz kronikę w claude.ai, żeby zobaczyć i edytować scenariusze.";
+      renderChrome();
+      return;
+    }
+    DB = db;
+    renderChrome();
+    subscribe();
+  }, function () {
+    state.loaded = true;
+    $("status-line").textContent = "Baza pomysłów nie jest dostępna w tym widoku.";
+  });
+})();
+</script>

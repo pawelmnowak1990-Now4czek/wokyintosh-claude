@@ -1,0 +1,57 @@
+{
+  "attach": true,
+  "caption": "W latach 1802–1803 Napoleon wysłał polskich legionistów na San Domingo, żeby tłumili powstanie niewolników. Większość zmarła na żółtą febrę, a część przeszła na stronę Haitańczyków. Niepodległe Haiti nadało im obywatelstwo, a ich potomkowie żyją tam do dziś.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Legioniści polscy i Napoleon",
+  "format": "template",
+  "meme": "Anakin i Padmé",
+  "notes": "",
+  "panels": [
+    "Legionista: „Walczymy dla ciebie, a ty wskrzesisz Polskę.”",
+    "Napoleon z uśmieszkiem: „Najpierw płyniecie na Haiti.”",
+    "Legionista: „…a potem Polska, prawda?”",
+    "Napoleon milczy. Legionista: „…prawda?”"
+  ],
+  "pl": true,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "Recreate the attached 'Anakin and Padmé' four-panel meme template as an early-19th-century painting in the style of January Suchodolski: warm oils, Napoleonic uniforms, a sunny meadow background. Keep the four-panel layout and the facial expressions.",
+  "shots": [
+    {
+      "scene": "The Padmé role is a young Polish legionnaire in a blue and crimson uniform; the Anakin role is Napoleon in his uniform and bicorne, smirking in panel 2 and silent in panel 4.",
+      "texts": [
+        {
+          "at": "the legionnaire in panel 1",
+          "en": "We fight for you, and you'll restore Poland.",
+          "k": "say",
+          "pl": "Walczymy dla ciebie, a ty wskrzesisz Polskę."
+        },
+        {
+          "at": "Napoleon in panel 2",
+          "en": "First, you're sailing to Haiti.",
+          "k": "say",
+          "pl": "Najpierw płyniecie na Haiti."
+        },
+        {
+          "at": "the legionnaire in panel 3",
+          "en": "…and then Poland, right?",
+          "k": "say",
+          "pl": "…a potem Polska, prawda?"
+        },
+        {
+          "at": "the legionnaire in panel 4",
+          "en": "…right?",
+          "k": "say",
+          "pl": "…prawda?"
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Malarstwo w stylu Suchodolskiego",
+  "title": "Legiony i Haiti",
+  "when": "1802, Francja i San Domingo",
+  "year": 1802,
+  "yearLabel": "1802"
+}

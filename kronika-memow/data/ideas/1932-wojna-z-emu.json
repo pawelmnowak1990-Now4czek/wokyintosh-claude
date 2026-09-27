@@ -1,0 +1,48 @@
+{
+  "attach": false,
+  "caption": "W 1932 roku australijska armia wysłała żołnierzy z karabinami maszynowymi przeciw około 20 tysiącom emu, które niszczyły uprawy pszenicy. Operacja skończyła się kompromitacją. Major Meredith przyznał potem, że emu stawiają czoła karabinom maszynowym „z niezniszczalnością czołgów”.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Major G.P.W. Meredith",
+  "format": "scenario",
+  "meme": "Look at all those chickens",
+  "notes": "",
+  "panels": [
+    "Major Meredith z karabinem maszynowym Lewis na ciężarówce, przed nim pole pełne emu: „Look at all those chickens.”",
+    "Miesiąc później nagłówek gazety: „EMU 1 : ARMIA 0”."
+  ],
+  "pl": false,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "A 2-panel horizontal comic in the style of a 1930s propaganda poster: bold flat shapes, a limited palette of khaki, rust and cream, screen-printed texture.",
+  "shots": [
+    {
+      "scene": "Western Australian wheat fields, 1932: Major Meredith in a slouch hat and khaki uniform stands on a truck behind a Lewis machine gun, staring at a field full of hundreds of emus.",
+      "texts": [
+        {
+          "at": "Meredith",
+          "en": "Look at all those chickens.",
+          "k": "say",
+          "pl": "Look at all those chickens."
+        }
+      ]
+    },
+    {
+      "scene": "A folded 1932 newspaper on a table with a big headline; a single smug emu stands next to it.",
+      "texts": [
+        {
+          "at": "the headline",
+          "en": "EMUS 1 : ARMY 0",
+          "k": "sign",
+          "pl": "EMU 1 : ARMIA 0"
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Plakat z lat 30.",
+  "title": "Wojna z emu",
+  "when": "Listopad 1932, Australia Zachodnia",
+  "year": 1932,
+  "yearLabel": "1932"
+}

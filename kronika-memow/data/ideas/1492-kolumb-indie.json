@@ -1,0 +1,47 @@
+{
+  "attach": true,
+  "caption": "Kolumb do końca życia był przekonany, że dopłynął do Azji. Stąd „Indianie” i „Indie Zachodnie”.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Krzysztof Kolumb",
+  "format": "template",
+  "meme": "Is this a pigeon?",
+  "notes": "",
+  "panels": [
+    "Kolumb (w roli bohatera anime) wskazuje karaibską wyspę (w roli motyla). Podpis: „Czy to Indie?”"
+  ],
+  "pl": false,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "Repaint the attached 'Is this a pigeon?' meme template as a late-15th-century hand-colored woodcut combined with a portolan chart: sepia linework, faded blues and reds, compass-rose lines in the background. Keep the exact composition and the pointing gesture.",
+  "shots": [
+    {
+      "scene": "Replace the anime character with Christopher Columbus (late-15th-century clothing, shoulder-length hair) standing on the deck of the Santa María; replace the butterfly with a small tropical Caribbean island with palm trees.",
+      "texts": [
+        {
+          "at": "Columbus",
+          "en": "Columbus",
+          "k": "label",
+          "pl": "Kolumb"
+        },
+        {
+          "at": "the island",
+          "en": "The Caribbean",
+          "k": "label",
+          "pl": "Karaiby"
+        },
+        {
+          "en": "Is this India?",
+          "k": "cap",
+          "pl": "Czy to Indie?"
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Drzeworyt i mapa portolanowa",
+  "title": "Kolumb i „Indie”",
+  "when": "Październik 1492, Karaiby",
+  "year": 1492,
+  "yearLabel": "1492"
+}

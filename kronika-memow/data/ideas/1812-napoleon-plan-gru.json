@@ -1,0 +1,57 @@
+{
+  "attach": true,
+  "caption": "We wrześniu 1812 Napoleon zajął Moskwę i czekał, aż car Aleksander poprosi o pokój. Car milczał, a miasto spłonęło. Po pięciu tygodniach Wielka Armia zaczęła odwrót, z którego wróciła tylko niewielka jej część.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Napoleon",
+  "format": "template",
+  "meme": "Gru's Plan",
+  "notes": "",
+  "panels": [
+    "Tablica 1: „Najechać Rosję”.",
+    "Tablica 2: „Zdobyć Moskwę”.",
+    "Tablica 3: „Car się poddaje”.",
+    "Tablica 4: ta sama kartka, a Napoleon patrzy na nią drugi raz."
+  ],
+  "pl": false,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "Recreate the attached 'Gru's Plan' meme template (four panels of a man presenting a plan on an easel board) as a Neoclassical oil painting in the style of Jacques-Louis David. Keep the four-panel layout, the easel and the double take in the last panel.",
+  "shots": [
+    {
+      "scene": "Napoleon in uniform and bicorne presents a plan on a wooden easel inside a campaign tent strewn with maps; in panel 4 he stares at the board a second time in dawning horror.",
+      "texts": [
+        {
+          "at": "the board in panel 1",
+          "en": "Invade Russia",
+          "k": "sign",
+          "pl": "Najechać Rosję"
+        },
+        {
+          "at": "the board in panel 2",
+          "en": "Take Moscow",
+          "k": "sign",
+          "pl": "Zdobyć Moskwę"
+        },
+        {
+          "at": "the board in panel 3",
+          "en": "The Tsar surrenders",
+          "k": "sign",
+          "pl": "Car się poddaje"
+        },
+        {
+          "at": "the board in panel 4",
+          "en": "The Tsar surrenders",
+          "k": "sign",
+          "pl": "Car się poddaje"
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Klasycyzm w stylu Davida",
+  "title": "Plan Napoleona",
+  "when": "Czerwiec–październik 1812, Rosja",
+  "year": 1812,
+  "yearLabel": "1812"
+}

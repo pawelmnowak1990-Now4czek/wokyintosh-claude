@@ -1,0 +1,43 @@
+{
+  "attach": false,
+  "caption": "Rzymianie nienawidzili słowa „król” od czasu wygnania Tarkwiniusza Pysznego. Oktawian August unikał więc tytułu rex i nazywał się skromnie princeps, czyli „pierwszy obywatel”. W praktyce był pierwszym cesarzem.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Oktawian August",
+  "format": "template",
+  "meme": "Drake (Hotline Bling)",
+  "notes": "",
+  "panels": [
+    "Góra: August odwraca się z niesmakiem od napisu „Król”.",
+    "Dół: August z aprobatą wskazuje napis „Pierwszy obywatel, który ma całą władzę”."
+  ],
+  "pl": false,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "A 2x2 grid in the layout of the 'Drake Hotline Bling' meme, painted as a Roman fresco: warm reds and ochres, plaster texture. Left column: the figure; right column: plain plaster panels with painted lettering.",
+  "shots": [
+    {
+      "scene": "Top left: Emperor Augustus (young, short curly hair, laurel wreath, white toga) turns away with his hand raised in disgust. Bottom left: the same Augustus points approvingly with a satisfied smile.",
+      "texts": [
+        {
+          "at": "the top-right panel",
+          "en": "King",
+          "k": "sign",
+          "pl": "Król"
+        },
+        {
+          "at": "the bottom-right panel",
+          "en": "First citizen who holds all the power",
+          "k": "sign",
+          "pl": "Pierwszy obywatel, który ma całą władzę"
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Fresk rzymski",
+  "title": "August nie chce być królem",
+  "when": "27 p.n.e., Rzym",
+  "year": -27,
+  "yearLabel": "27 p.n.e."
+}

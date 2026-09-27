@@ -1,0 +1,42 @@
+{
+  "attach": true,
+  "caption": "Szlachta broniła „złotej wolności”: wolnej elekcji, liberum veto i prawa do rokoszu. Sąsiedzi chętnie ją w tym wspierali, bo słaba Rzeczpospolita była im na rękę. Skończyło się rozbiorami.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Szlachcic polski",
+  "format": "template",
+  "meme": "Two Buttons",
+  "notes": "",
+  "panels": [
+    "Szlachcic w kontuszu poci się nad dwoma przyciskami: „Złota wolność” i „Państwo, które przetrwa”."
+  ],
+  "pl": true,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "Recreate the attached 'Two Buttons' meme template as an 18th-century Polish Sarmatian portrait: flat, stiff oil painting, dark background, rich fabrics, a coat of arms in the upper corner. Keep the two-part layout: the hand hovering over two buttons on top, the sweating man below.",
+  "shots": [
+    {
+      "scene": "Top: a hand with a jeweled signet ring hovers over two big red buttons on an ornate panel. Bottom: a Polish nobleman with a shaved head and long mustache, in a red kontusz, a silk sash and a sabre, sweats heavily and wipes his forehead with a handkerchief.",
+      "texts": [
+        {
+          "at": "the left button",
+          "en": "Golden Liberty",
+          "k": "label",
+          "pl": "Złota wolność"
+        },
+        {
+          "at": "the right button",
+          "en": "A state that survives",
+          "k": "label",
+          "pl": "Państwo, które przetrwa"
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Portret sarmacki",
+  "title": "Szlachcic przed dwoma przyciskami",
+  "when": "XVII–XVIII w., Rzeczpospolita",
+  "year": 1700,
+  "yearLabel": "XVII–XVIII w."
+}

@@ -1,0 +1,42 @@
+{
+  "attach": false,
+  "caption": "W czasie wielkiej schizmy zachodniej (1378–1417) było dwóch papieży naraz: w Rzymie i w Awinionie. Sobór w Pizie w 1409 roku miał problem rozwiązać, ale wybrał trzeciego. Porządek zaprowadził dopiero sobór w Konstancji.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Papieże wielkiej schizmy",
+  "format": "template",
+  "meme": "Spider-Man pointing at Spider-Man",
+  "notes": "",
+  "panels": [
+    "Dwaj papieże w identycznych szatach wskazują na siebie nawzajem, jak Spider-Mani z memu. Podpisy: „Rzym” i „Awinion”. Wersja bonusowa: trzech papieży, trzeci podpisany „Piza, 1409”."
+  ],
+  "pl": false,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "A single-panel image in the style of a 14th-century illuminated manuscript miniature: gold-leaf background, flat bright pigments, a decorative border with marginalia.",
+  "shots": [
+    {
+      "scene": "Two popes in identical white and gold vestments and papal tiaras stand facing each other and point accusingly at each other, recreating the composition of the 'Spider-Man pointing at Spider-Man' meme.",
+      "texts": [
+        {
+          "at": "the pope on the left",
+          "en": "Rome",
+          "k": "label",
+          "pl": "Rzym"
+        },
+        {
+          "at": "the pope on the right",
+          "en": "Avignon",
+          "k": "label",
+          "pl": "Awinion"
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Iluminowany manuskrypt",
+  "title": "Papież wskazuje papieża",
+  "when": "1378–1417, Rzym, Awinion i Piza",
+  "year": 1378,
+  "yearLabel": "1378–1417"
+}

@@ -1,0 +1,60 @@
+{
+  "attach": false,
+  "caption": "Porwany przez piratów Cezar sam zażądał podniesienia okupu z 20 do 50 talentów. W niewoli czytał porywaczom swoje wiersze i obiecywał, że ich ukrzyżuje. Brali to za żart. Po uwolnieniu wrócił z flotą i dotrzymał słowa.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Juliusz Cezar",
+  "format": "scenario",
+  "meme": "Trade offer",
+  "notes": "",
+  "panels": [
+    "Pirat w pozie z memu: „Trade offer: ty dostajesz wolność, my dostajemy 20 talentów.”",
+    "Urażony Cezar: „20? Jestem wart co najmniej 50.”",
+    "Kilka tygodni później Cezar z flotą przed kryjówką piratów: „Mówiłem, że was ukrzyżuję.”"
+  ],
+  "pl": false,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "A 3-panel horizontal comic painted in the style of a Pompeian fresco: flat earthy reds and ochres, visible plaster texture, simple dark outlines.",
+  "shots": [
+    {
+      "scene": "On the deck of a pirate ship in the Aegean, a Cilician pirate faces the viewer and gestures with both hands in the 'Trade offer' meme pose; a captive young Julius Caesar in a white toga stands beside him.",
+      "texts": [
+        {
+          "at": "the pirate",
+          "en": "Trade offer: you receive freedom, we receive 20 talents.",
+          "k": "say",
+          "pl": "Trade offer: ty dostajesz wolność, my dostajemy 20 talentów."
+        }
+      ]
+    },
+    {
+      "scene": "Close-up of young Julius Caesar, deeply offended, one eyebrow raised, arms crossed.",
+      "texts": [
+        {
+          "at": "Caesar",
+          "en": "20? I'm worth at least 50.",
+          "k": "say",
+          "pl": "20? Jestem wart co najmniej 50."
+        }
+      ]
+    },
+    {
+      "scene": "Weeks later: Caesar stands at the prow of a Roman warship leading a small fleet toward the pirates' island hideout; startled pirates on the shore.",
+      "texts": [
+        {
+          "at": "Caesar",
+          "en": "I told you I'd crucify you.",
+          "k": "say",
+          "pl": "Mówiłem, że was ukrzyżuję."
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Fresk pompejański",
+  "title": "Cezar wycenia sam siebie",
+  "when": "ok. 75 p.n.e., Morze Egejskie",
+  "year": -75,
+  "yearLabel": "75 p.n.e."
+}

@@ -1,0 +1,35 @@
+{
+  "attach": false,
+  "caption": "Po klęsce nad Jeziorem Trazymeńskim Fabiusz unikał otwartej bitwy z Hannibalem i tylko nękał jego armię. Rzymianie przezwali go Kunktatorem, czyli „Zwlekaczem”, i szybko mieli go dość. Rok później postawili na wielką bitwę pod Kannami i przegrali.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Kwintus Fabiusz Maksymus",
+  "format": "template",
+  "meme": "Roll Safe",
+  "notes": "",
+  "panels": [
+    "Fabiusz stuka się palcem w skroń z chytrym uśmiechem. Podpis: „Nie przegrasz bitwy z Hannibalem, jeśli nigdy jej nie stoczysz.”"
+  ],
+  "pl": false,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "A single-panel image in the style of an ancient Roman mosaic: small tesserae, an earthy palette, a simple border.",
+  "shots": [
+    {
+      "scene": "Quintus Fabius Maximus, an older Roman general in a red cloak and cuirass, smirks knowingly and taps his temple with one finger, recreating the 'Roll Safe' meme pose; Roman camp tents behind him.",
+      "texts": [
+        {
+          "en": "You can't lose a battle to Hannibal if you never fight him.",
+          "k": "cap",
+          "pl": "Nie przegrasz bitwy z Hannibalem, jeśli nigdy jej nie stoczysz."
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Mozaika rzymska",
+  "title": "Fabiusz Kunktator",
+  "when": "217 p.n.e., Italia",
+  "year": -217,
+  "yearLabel": "217 p.n.e."
+}

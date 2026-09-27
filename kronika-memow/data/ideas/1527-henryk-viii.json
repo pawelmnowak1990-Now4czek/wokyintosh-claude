@@ -1,0 +1,48 @@
+{
+  "attach": true,
+  "caption": "W 1527 roku Henryk zaczął starać się o unieważnienie małżeństwa z Katarzyną, żeby poślubić Annę. Papież się nie zgodził, więc król zerwał z Rzymem i sam stanął na czele Kościoła w Anglii.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Henryk VIII",
+  "format": "template",
+  "meme": "Distracted Boyfriend",
+  "notes": "",
+  "panels": [
+    "Henryk VIII ogląda się za Anną Boleyn, a Katarzyna Aragońska patrzy na niego ze złością. Podpisy: „Henryk VIII”, „Anna Boleyn”, „Katarzyna Aragońska”."
+  ],
+  "pl": false,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "Repaint the attached 'Distracted Boyfriend' meme template as a 1530s Tudor oil painting in the style of Hans Holbein the Younger: oil on oak panel, fine detail, visible craquelure. Keep the exact composition, poses and facial expressions.",
+  "shots": [
+    {
+      "scene": "Center: King Henry VIII (red beard, black feathered cap, wide padded doublet), turning to look back. Left, walking away: Anne Boleyn in a French hood. Right, glaring at him: Catherine of Aragon in a gable hood. Background: a Tudor London street.",
+      "texts": [
+        {
+          "at": "Henry",
+          "en": "Henry VIII",
+          "k": "label",
+          "pl": "Henryk VIII"
+        },
+        {
+          "at": "Anne Boleyn",
+          "en": "Anne Boleyn",
+          "k": "label",
+          "pl": "Anna Boleyn"
+        },
+        {
+          "at": "Catherine",
+          "en": "Catherine of Aragon",
+          "k": "label",
+          "pl": "Katarzyna Aragońska"
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Portret tudorowski w stylu Holbeina",
+  "title": "Henryk VIII się ogląda",
+  "when": "1527, Anglia",
+  "year": 1527,
+  "yearLabel": "1527"
+}

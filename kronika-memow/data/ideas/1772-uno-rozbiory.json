@@ -1,0 +1,36 @@
+{
+  "attach": true,
+  "caption": "W 1772 roku Prusy, Rosja i Austria dokonały pierwszego rozbioru Rzeczypospolitej. Współczesna rycina „Tort królewski” pokazuje monarchów, którzy kroją mapę Polski jak ciasto. Potem zrobili to jeszcze dwa razy.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Fryderyk Wielki",
+  "format": "template",
+  "meme": "UNO Draw 25",
+  "notes": "",
+  "panels": [
+    "Karta: „Przestań rozbierać Polskę albo dobierz 25”. Fryderyk Wielki trzyma w ręku ogromny wachlarz kart."
+  ],
+  "pl": true,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "Recreate the attached 'UNO Draw 25' meme template as an 18th-century satirical copperplate engraving in the spirit of the 1772 print 'The Troelfth Cake': fine hatching, sepia ink, light hand coloring. Keep the two-panel layout.",
+  "shots": [
+    {
+      "scene": "Panel 1: an UNO-style playing card drawn as an engraved card. Panel 2: King Frederick the Great of Prussia (tricorne, blue uniform, cane) holds an enormous fan of cards, with a map of Poland on the table in front of him.",
+      "texts": [
+        {
+          "at": "the card",
+          "en": "Stop partitioning Poland or draw 25",
+          "k": "sign",
+          "pl": "Przestań rozbierać Polskę albo dobierz 25"
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Satyryczny miedzioryt z XVIII w.",
+  "title": "Rozbiory i UNO",
+  "when": "1772, pierwszy rozbiór",
+  "year": 1772,
+  "yearLabel": "1772"
+}

@@ -1,0 +1,48 @@
+{
+  "attach": false,
+  "caption": "Gdy wybuchł wielki pożar Rzymu, Neron był w Ancjum. Po powrocie otworzył swoje ogrody dla pogorzelców. Tyle że na spalonym terenie zbudował potem Złoty Dom, więc Rzymianie i tak mu nie uwierzyli. Skrzypiec wtedy jeszcze nie było, pojawiły się dopiero w XVI wieku.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Neron",
+  "format": "scenario",
+  "meme": "This is fine",
+  "notes": "",
+  "panels": [
+    "Neron siedzi w płonącej sali z lirą i kielichem wina, spokojny jak pies z memu: „This is fine.”",
+    "Neron nad planami na zgliszczach miasta: „Actually… this is great.”"
+  ],
+  "pl": false,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "A 2-panel horizontal comic rendered as an ancient Roman floor mosaic: small stone tesserae, a limited palette of terracotta, ochre, black and white, a simple geometric border around each panel.",
+  "shots": [
+    {
+      "scene": "Emperor Nero, laurel wreath and purple toga, sits calmly at a table in a palace room engulfed in flames, holding a lyre and a cup of wine, with a small serene smile, recreating the composition of the 'This is fine' dog meme.",
+      "texts": [
+        {
+          "at": "Nero",
+          "en": "This is fine.",
+          "k": "say",
+          "pl": "This is fine."
+        }
+      ]
+    },
+    {
+      "scene": "Nero stands among the smoking ruins of Rome, unrolling a large architectural plan of a lavish golden palace, grinning.",
+      "texts": [
+        {
+          "at": "Nero",
+          "en": "Actually… this is great.",
+          "k": "say",
+          "pl": "Actually… this is great."
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Mozaika rzymska",
+  "title": "Neron i pożar Rzymu",
+  "when": "Lipiec 64 n.e., Rzym",
+  "year": 64,
+  "yearLabel": "64 n.e."
+}

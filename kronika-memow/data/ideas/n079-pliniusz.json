@@ -1,0 +1,41 @@
+{
+  "attach": false,
+  "caption": "Pliniusz Starszy, dowódca floty w Misenum, popłynął w stronę erupcji, żeby ratować ludzi, ale też z naukowej ciekawości. Gdy sternik radził zawrócić, odpowiedział: „Fortes fortuna iuvat”, czyli „Szczęście sprzyja odważnym”. Zginął w Stabiach.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Pliniusz Starszy",
+  "format": "scenario",
+  "meme": "Why are you running?",
+  "notes": "",
+  "panels": [
+    "Tłumy uciekają znad Zatoki Neapolitańskiej, nad Wezuwiuszem kłęby dymu.",
+    "Pliniusz na dziobie okrętu płynie prosto na erupcję i krzyczy do uciekających: „Why are you running? WHY ARE YOU RUNNING?”"
+  ],
+  "pl": false,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "A 2-panel horizontal comic in the style of a Pompeian fresco: earthy reds, ochres and blacks, soft plaster texture, slightly faded like an excavated wall painting.",
+  "shots": [
+    {
+      "scene": "Panicked Romans run along the shore of the Bay of Naples carrying their belongings; Mount Vesuvius erupts in the background with a huge umbrella-shaped column of ash.",
+      "texts": []
+    },
+    {
+      "scene": "Pliny the Elder, an older bearded Roman admiral, stands at the prow of a quadrireme sailing straight toward the erupting volcano, shouting at the fleeing people with a confused, indignant face.",
+      "texts": [
+        {
+          "at": "Pliny",
+          "en": "Why are you running? WHY ARE YOU RUNNING?",
+          "k": "say",
+          "pl": "Why are you running? WHY ARE YOU RUNNING?"
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Fresk pompejański",
+  "title": "Pliniusz płynie pod prąd",
+  "when": "79 n.e., Zatoka Neapolitańska",
+  "year": 79,
+  "yearLabel": "79 n.e."
+}

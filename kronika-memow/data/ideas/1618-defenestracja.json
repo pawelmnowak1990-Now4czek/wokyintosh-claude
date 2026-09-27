@@ -1,0 +1,41 @@
+{
+  "attach": false,
+  "caption": "Namiestnicy spadli z wysokości około 20 metrów i przeżyli. Według katolików uratowali ich aniołowie, według protestantów kupa gnoju. Sekretarz dostał potem szlachectwo z przydomkiem „von Hohenfall”, czyli „z Wysokiego Upadku”. Od tego zaczęła się wojna trzydziestoletnia.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Czescy stanowi i namiestnicy cesarscy",
+  "format": "scenario",
+  "meme": "YEET",
+  "notes": "",
+  "panels": [
+    "Czescy szlachcice wyrzucają przez okno cesarskich namiestników: „YEET!”",
+    "Trzech urzędników siedzi cało w kupie gnoju pod zamkiem, jeden z kciukiem w górę."
+  ],
+  "pl": false,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "A 2-panel horizontal comic in the style of a 17th-century copperplate engraving in the manner of Matthäus Merian: fine black hatching on off-white paper, lightly hand-colored.",
+  "shots": [
+    {
+      "scene": "Inside a hall of Prague Castle, a group of angry Bohemian Protestant noblemen hurl two imperial officials in black clothes and ruffs out of a tall window, mid-throw.",
+      "texts": [
+        {
+          "at": "the noblemen",
+          "en": "YEET!",
+          "k": "say",
+          "pl": "YEET!"
+        }
+      ]
+    },
+    {
+      "scene": "Below the castle wall, three officials in black clothes sit unharmed on a large dung heap, slightly dazed; one gives a thumbs up.",
+      "texts": []
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Miedzioryt w stylu Meriana",
+  "title": "Defenestracja praska",
+  "when": "23 maja 1618, Praga",
+  "year": 1618,
+  "yearLabel": "1618"
+}

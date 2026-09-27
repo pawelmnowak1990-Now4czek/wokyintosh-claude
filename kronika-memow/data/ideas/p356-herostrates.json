@@ -1,0 +1,29 @@
+{
+  "attach": false,
+  "caption": "Herostrates podpalił świątynię Artemidy, jeden z siedmiu cudów świata, bo chciał zdobyć sławę. Efezjanie za karę zakazali wymawiania jego imienia. Właśnie je przeczytałeś. Według tradycji tej samej nocy urodził się Aleksander Wielki.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Herostrates",
+  "format": "template",
+  "meme": "Disaster Girl",
+  "notes": "",
+  "panels": [
+    "Herostrates uśmiecha się porozumiewawczo do widza, a za nim płonie świątynia Artemidy w Efezie."
+  ],
+  "pl": false,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "A single image painted as an ancient Greek red-figure vase painting: terracotta-orange figures on a glossy black background, fine black linework, a meander border.",
+  "shots": [
+    {
+      "scene": "In the foreground, a young Greek man, Herostratus, looks back at the viewer with a small knowing smirk, recreating the 'Disaster Girl' meme; behind him the great marble Temple of Artemis at Ephesus is engulfed in flames.",
+      "texts": []
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Waza czerwonofigurowa",
+  "title": "Herostrates i świątynia",
+  "when": "356 p.n.e., Efez",
+  "year": -356,
+  "yearLabel": "356 p.n.e."
+}

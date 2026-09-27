@@ -1,0 +1,48 @@
+{
+  "attach": false,
+  "caption": "Według Długosza heroldzi przynieśli dwa nagie miecze, żeby sprowokować króla, który zwlekał z bitwą i słuchał mszy. Kilka godzin później wielki mistrz Ulrich von Jungingen nie żył. Miecze trafiły jako trofeum do skarbca na Wawelu i zaginęły, gdy Prusacy zrabowali skarbiec koronny po III rozbiorze.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Władysław Jagiełło",
+  "format": "scenario",
+  "meme": "It's free real estate",
+  "notes": "",
+  "panels": [
+    "Krzyżaccy heroldzi wręczają Jagielle dwa nagie miecze: „Wielki mistrz przesyła, żebyście przestali się chować.”",
+    "Spokojny Jagiełło: „Darmowe miecze? It's free real estate.”"
+  ],
+  "pl": true,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "A 2-panel horizontal comic painted in the style of Jan Matejko's 19th-century Polish history paintings: rich dark oils, dramatic theatrical lighting, densely detailed costumes and armor.",
+  "shots": [
+    {
+      "scene": "A field camp on a July morning in 1410. Two Teutonic heralds in tabards stiffly present two unsheathed swords to King Władysław Jagiełło of Poland, a lean older king in a fur-trimmed cloak and crown; Polish knights watch.",
+      "texts": [
+        {
+          "at": "a herald",
+          "en": "The Grand Master sends these, so you'll stop hiding.",
+          "k": "say",
+          "pl": "Wielki mistrz przesyła, żebyście przestali się chować."
+        }
+      ]
+    },
+    {
+      "scene": "Jagiełło calmly takes both swords with a relaxed, pleased expression, like the 'It's free real estate' meme.",
+      "texts": [
+        {
+          "at": "Jagiełło",
+          "en": "Free swords? It's free real estate.",
+          "k": "say",
+          "pl": "Darmowe miecze? It's free real estate."
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Batalistyka w duchu Matejki",
+  "title": "Dwa nagie miecze",
+  "when": "15 lipca 1410, Grunwald",
+  "year": 1410,
+  "yearLabel": "1410"
+}

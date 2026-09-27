@@ -1,0 +1,84 @@
+{
+  "attach": false,
+  "bubbleWord": "Speech scroll",
+  "caption": "25 września 1066 Harold II rozbił pod Stamford Bridge wikingów Haralda Hardrady. Trzy dni później na drugim końcu Anglii wylądował Wilhelm, książę Normandii, potomek wikinga Rollona. Harold przeszedł z armią około 400 km na południe i 14 października zginął pod Hastings. Na tkaninie z Bayeux bitwy pod Stamford Bridge w ogóle nie ma. My ją uzupełniliśmy.",
+  "captionEn": "On 25 September 1066 Harold II crushed the Vikings at Stamford Bridge. Three days later William of Normandy, himself a descendant of the Viking Rollo, landed on the other end of England. Harold marched about 250 miles south and died at Hastings on 14 October. The Bayeux Tapestry skips Stamford Bridge entirely, so we stitched it in. #1066 #OnThisDay #HistoryMemes",
+  "createdAt": "2026-09-26T12:05:56+00:00",
+  "figure": "Harold II i Wilhelm Zdobywca",
+  "format": "scenario",
+  "formatLine": "Wide 16:9 format.",
+  "meme": "Ah sh*t, here we go again",
+  "noTextLine": "Keep an empty inscription band along the top and leave the speech scrolls empty, with no letters anywhere in the image, so text can be added later.",
+  "notes": "Publikacja: pon. 28 IX 2026 (960. rocznica lądowania). Na X format 16:9; na Instagram każda scena osobno w 1:1 (dopisz na początku promptu „Scene 1 only” itd.). Ciąg dalszy 14 X: Hastings i „strzała w oko”. Przed publikacją sprawdzić łacinę litera po literze.",
+  "panelWord": "Scene",
+  "panels": [
+    "Stamford Bridge, 25 IX. Harold wśród pokonanych Norwegów, nad sceną napis „HIC HAROLD REX VICIT NORDMANNOS”: „Wikingowie pokonani. Wreszcie odpoczniemy.”",
+    "Pevensey, trzy dni później. Wilhelm schodzi ze statku ze smoczą głową na dziobie, napis „HIC WILLELM DUX VENIT AD PEVENESAE”: „Niespodzianka! My też jesteśmy wikingami.”",
+    "York. Napis „HIC NUNTIATUM EST HAROLDO”. Posłaniec: „Panie, Normanowie w Pevensey!” Harold w pozie CJ-a z GTA: „Ah sh*t, here we go again.”"
+  ],
+  "pl": false,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "A wide horizontal image (16:9) in the exact style of the Bayeux Tapestry: wool embroidery on unbleached, slightly yellowed linen, stem-stitch outlines and laid-and-couched fill, a limited palette of terracotta red, ochre yellow, olive and sage green, blue-grey and blue-black wool. Flat figures in profile with no perspective, horses with legs in contrasting colors, stylized Romanesque trees separating the scenes, decorative upper and lower borders with paired animals and diagonal bands. The English wear long moustaches; the Normans are clean-shaven with the backs of their heads shaved, as the Tapestry shows them. Three scenes, read left to right.",
+  "shots": [
+    {
+      "scene": "Stamford Bridge, 25 September 1066. King Harold of England, crowned, stands victorious among fallen Norwegian Vikings with round shields; Harald Hardrada lies dead with an arrow in his throat. Harold raises his sword with relief.",
+      "texts": [
+        {
+          "k": "ins",
+          "la": "HIC HAROLD REX VICIT NORDMANNOS"
+        },
+        {
+          "at": "Harold",
+          "en": "Vikings defeated. Finally, some rest.",
+          "k": "say",
+          "pl": "Wikingowie pokonani. Wreszcie odpoczniemy."
+        }
+      ]
+    },
+    {
+      "scene": "Pevensey, three days later. Norman longships with carved dragon-head prows run onto the beach while horses are led ashore. Duke William steps off his ship, grinning at the viewer.",
+      "texts": [
+        {
+          "k": "ins",
+          "la": "HIC WILLELM DUX VENIT AD PEVENESAE"
+        },
+        {
+          "at": "William",
+          "en": "Surprise! We're Vikings too.",
+          "k": "say",
+          "pl": "Niespodzianka! My też jesteśmy wikingami."
+        }
+      ]
+    },
+    {
+      "scene": "York. A messenger on an exhausted horse points south. Harold, still in battle-worn mail, stands with slumped shoulders and a tired, resigned face, like CJ in the 'Ah sh*t, here we go again' meme.",
+      "texts": [
+        {
+          "k": "ins",
+          "la": "HIC NUNTIATUM EST HAROLDO"
+        },
+        {
+          "at": "the messenger",
+          "en": "Sire, Normans at Pevensey!",
+          "k": "say",
+          "pl": "Panie, Normanowie w Pevensey!"
+        },
+        {
+          "at": "Harold",
+          "en": "Ah sh*t, here we go again.",
+          "k": "say",
+          "pl": "Ah sh*t, here we go again."
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Tkanina z Bayeux",
+  "textLine": "Latin inscriptions are embroidered in capital letters across the top of each scene. Instead of modern speech bubbles, use medieval speech scrolls (unfurled banderoles) with the text embroidered in the same wool. Spell every inscription and line exactly as written.",
+  "title": "Harold: here we go again",
+  "when": "25–28 września 1066, Stamford Bridge i Pevensey",
+  "year": 1066,
+  "yearLabel": "1066"
+}

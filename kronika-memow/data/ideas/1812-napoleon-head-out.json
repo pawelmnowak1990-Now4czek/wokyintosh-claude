@@ -1,0 +1,65 @@
+{
+  "attach": false,
+  "caption": "5 grudnia 1812 Napoleon zostawił ginącą armię w Smorgoniach i saniami popędził do Paryża. Po drodze zatrzymał się w warszawskim Hotelu Angielskim i powiedział: „Od wzniosłości do śmieszności jest tylko jeden krok”.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Napoleon",
+  "format": "scenario",
+  "meme": "Ight, imma head out",
+  "notes": "",
+  "panels": [
+    "„Grudzień 1812, gdzieś w Rosji.” Śnieżyca, zmarznięci żołnierze przy ognisku. Oficer: „Sire, nie mamy jedzenia ani koni, a jest minus 30…”",
+    "Napoleon powoli wstaje z krzesła w pozie ze SpongeBoba: „Ight… imma head out.”",
+    "Napoleon pędzi saniami przez śnieg, drogowskaz „PARIS →”."
+  ],
+  "pl": false,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "A 3-panel horizontal comic painted in the Neoclassical style of Jacques-Louis David: smooth oil finish, crisp drawing, a cold winter palette of blues and greys.",
+  "shots": [
+    {
+      "scene": "A snowstorm in Russia, December 1812: frozen, ragged French soldiers huddle around a small campfire; an exhausted officer with frost in his mustache addresses the Emperor.",
+      "texts": [
+        {
+          "en": "December 1812, somewhere in Russia",
+          "k": "cap",
+          "pl": "Grudzień 1812, gdzieś w Rosji"
+        },
+        {
+          "at": "the officer",
+          "en": "Sire, we have no food, no horses, and it's minus 30…",
+          "k": "say",
+          "pl": "Sire, nie mamy jedzenia ani koni, a jest minus 30…"
+        }
+      ]
+    },
+    {
+      "scene": "Napoleon in his grey greatcoat and bicorne slowly rises from a folding camp chair, one hand on his knee, recreating the pose from the SpongeBob 'Ight, imma head out' meme.",
+      "texts": [
+        {
+          "at": "Napoleon",
+          "en": "Ight… imma head out.",
+          "k": "say",
+          "pl": "Ight… imma head out."
+        }
+      ]
+    },
+    {
+      "scene": "Napoleon speeds away across the snow in a horse-drawn sleigh; a wooden signpost in the foreground points the way.",
+      "texts": [
+        {
+          "at": "the signpost",
+          "en": "PARIS →",
+          "k": "sign",
+          "pl": "PARIS →"
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Klasycyzm w stylu Davida",
+  "title": "Napoleon opuszcza armię",
+  "when": "Grudzień 1812, Smorgonie",
+  "year": 1812,
+  "yearLabel": "1812"
+}

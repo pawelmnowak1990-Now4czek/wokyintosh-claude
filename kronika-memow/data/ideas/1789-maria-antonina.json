@@ -1,0 +1,48 @@
+{
+  "attach": false,
+  "caption": "5 października 1789 kobiety z Paryża pomaszerowały na Wersal, bo chleb był za drogi. Słynne „niech jedzą ciastka” nigdy nie padło. Rousseau przypisał te słowa „wielkiej księżniczce” w „Wyznaniach”, pisanych, gdy Maria Antonina była dzieckiem w Wiedniu.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Maria Antonina",
+  "format": "scenario",
+  "meme": "Stop! I could've dropped my croissant!",
+  "notes": "",
+  "panels": [
+    "Tłum paryżanek pod bramą Wersalu krzyczy: „CHLEBA!”",
+    "Królowa gwałtownie odskakuje od okna z croissantem w ręce: „Stop! I could've dropped my croissant!”"
+  ],
+  "pl": false,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "A 2-panel horizontal comic in the style of a Rococo oil painting by Élisabeth Vigée Le Brun: soft pastel colors, powdery light, silk and lace.",
+  "shots": [
+    {
+      "scene": "A crowd of angry Parisian market women with pikes and brooms at the golden gates of Versailles in October 1789, rain and mud.",
+      "texts": [
+        {
+          "at": "the crowd",
+          "en": "BREAD!",
+          "k": "say",
+          "pl": "CHLEBA!"
+        }
+      ]
+    },
+    {
+      "scene": "Queen Marie Antoinette, in a towering powdered wig and a pale silk gown, jumps back from a palace window in exaggerated alarm, clutching a croissant.",
+      "texts": [
+        {
+          "at": "Marie Antoinette",
+          "en": "Stop! I could've dropped my croissant!",
+          "k": "say",
+          "pl": "Stop! I could've dropped my croissant!"
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Rokoko w stylu Vigée Le Brun",
+  "title": "Maria Antonina i croissant",
+  "when": "5 października 1789, Wersal",
+  "year": 1789,
+  "yearLabel": "1789"
+}

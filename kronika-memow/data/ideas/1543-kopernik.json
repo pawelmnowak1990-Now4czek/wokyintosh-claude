@@ -1,0 +1,60 @@
+{
+  "attach": false,
+  "caption": "Luterański teolog Andreas Osiander dodał do „De revolutionibus” niepodpisaną przedmowę, że teoria to „tylko hipoteza”. Legenda mówi, że Kopernik dostał pierwszy wydrukowany egzemplarz na łożu śmierci w maju 1543.",
+  "createdAt": "2026-09-26T05:31:06+00:00",
+  "figure": "Mikołaj Kopernik",
+  "format": "scenario",
+  "meme": "Always has been",
+  "notes": "",
+  "panels": [
+    "Kanonik przy diagramie: „Czekaj… to Ziemia krąży wokół Słońca?”",
+    "Kopernik za nim, z astrolabium w miejscu pistoletu: „Always has been.”",
+    "Osiander w drukarni w Norymberdze: „…dopiszmy, że to tylko hipoteza.”"
+  ],
+  "pl": true,
+  "postUrl": "",
+  "postedAt": "",
+  "promptStyle": "A 3-panel horizontal comic in the style of a 16th-century hand-colored woodcut: bold black linework, cross-hatching, muted hand-applied watercolor.",
+  "shots": [
+    {
+      "scene": "A Warmian canon in a dark cassock, in a candlelit tower room in Frombork, 1543, staring in shock at a large heliocentric diagram on parchment.",
+      "texts": [
+        {
+          "at": "the canon",
+          "en": "Wait… the Earth goes around the Sun?",
+          "k": "say",
+          "pl": "Czekaj… to Ziemia krąży wokół Słońca?"
+        }
+      ]
+    },
+    {
+      "scene": "Nicolaus Copernicus (as in his Toruń portrait: dark shoulder-length hair, red coat) stands behind the canon, holding a brass astrolabe the way the astronaut holds the gun in the 'Always has been' meme.",
+      "texts": [
+        {
+          "at": "Copernicus",
+          "en": "Always has been.",
+          "k": "say",
+          "pl": "Always has been."
+        }
+      ]
+    },
+    {
+      "scene": "A Nuremberg print shop with a wooden printing press; the theologian Andreas Osiander writes a preface with a quill, with a sly smile.",
+      "texts": [
+        {
+          "at": "Osiander",
+          "en": "…let's add that it's just a hypothesis.",
+          "k": "say",
+          "pl": "…dopiszmy, że to tylko hipoteza."
+        }
+      ]
+    }
+  ],
+  "source": "claude",
+  "status": "idea",
+  "style": "Kolorowany drzeworyt z XVI w.",
+  "title": "Kopernik: Always has been",
+  "when": "1543, Frombork i Norymberga",
+  "year": 1543,
+  "yearLabel": "1543"
+}
